@@ -1,0 +1,3 @@
+from typing import Any
+
+def non_randomness(G, k: Any | None = ..., weight: str = ...): ...

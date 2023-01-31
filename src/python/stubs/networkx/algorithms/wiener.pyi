@@ -1,0 +1,3 @@
+from typing import Any
+
+def wiener_index(G, weight: Any | None = ...): ...

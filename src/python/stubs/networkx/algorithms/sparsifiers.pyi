@@ -1,0 +1,3 @@
+from typing import Any
+
+def spanner(G, stretch, weight: Any | None = ..., seed: Any | None = ...): ...

@@ -1,0 +1,3 @@
+from typing import Any
+
+def is_semiconnected(G, topo_order: Any | None = ...): ...

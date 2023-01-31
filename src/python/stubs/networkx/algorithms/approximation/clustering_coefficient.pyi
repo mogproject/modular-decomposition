@@ -1,0 +1,3 @@
+from typing import Any
+
+def average_clustering(G, trials: int = ..., seed: Any | None = ...): ...

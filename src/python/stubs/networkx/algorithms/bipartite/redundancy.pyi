@@ -1,0 +1,3 @@
+from typing import Any
+
+def node_redundancy(G, nodes: Any | None = ...): ...

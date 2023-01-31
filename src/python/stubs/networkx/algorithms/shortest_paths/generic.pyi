@@ -1,0 +1,23 @@
+from typing import Any
+
+def has_path(G, source, target): ...
+def shortest_path(
+    G,
+    source: Any | None = ...,
+    target: Any | None = ...,
+    weight: Any | None = ...,
+    method: str = ...,
+): ...
+def shortest_path_length(
+    G,
+    source: Any | None = ...,
+    target: Any | None = ...,
+    weight: Any | None = ...,
+    method: str = ...,
+): ...
+def average_shortest_path_length(
+    G, weight: Any | None = ..., method: Any | None = ...
+): ...
+def all_shortest_paths(
+    G, source, target, weight: Any | None = ..., method: str = ...
+): ...
