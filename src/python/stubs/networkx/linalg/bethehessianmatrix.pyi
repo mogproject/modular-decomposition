@@ -1,0 +1,3 @@
+from typing import Any
+
+def bethe_hessian_matrix(G, r: Any | None = ..., nodelist: Any | None = ...): ...

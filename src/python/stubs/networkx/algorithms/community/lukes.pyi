@@ -1,0 +1,6 @@
+from collections.abc import Generator
+from typing import Any
+
+def lukes_partitioning(
+    G, max_size, node_weight: Any | None = ..., edge_weight: Any | None = ...
+) -> Generator[None, None, Any]: ...

@@ -1,0 +1,25 @@
+name: Unit Test
+
+on:
+    push:
+        branches:
+            - main
+            - dev
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+            - name: Install NetworkX
+              run: pip install networkx
+            - name: Install NumPy
+              run: pip install numpy
+            - name: Install testing dependencies
+              run: pip install pytest pytest-cov mypy
+            - name: Run unit tests
+              run: make test
