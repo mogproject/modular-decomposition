@@ -11,4 +11,7 @@ test:
 	mypy $(SRC_PY)
 	$(PYTHON) -m pytest -x --cov=. --cov-report=xml:cov.xml $(TEST_PY)
 
-.PHONY: test
+lab:
+	jupyter-lab
+
+.PHONY: test lab
