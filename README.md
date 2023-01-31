@@ -1,6 +1,6 @@
 # modular-decomposition
 
-[![Unit Test](https://github.com/mogproject/modular-decomposition/actions/workflows/ut.yml/badge.svg)](https://github.com/mogproject/modular-decomposition/actions/workflows/ut.yml)
+[![Unit Test](https://github.com/mogproject/modular-decomposition/actions/workflows/ut.yml/badge.svg)](https://github.com/mogproject/modular-decomposition/actions/workflows/ut.yml) [![Coverage Status](https://coveralls.io/repos/github/mogproject/modular-decomposition/badge.svg?branch=main)](https://coveralls.io/github/mogproject/modular-decomposition?branch=main)
 
 Graph modular decomposition implemented with C++ and Python 3. 
 
@@ -12,11 +12,20 @@ by Marc Tedder, Derek Corneil, Michel Habib, and Christophe Paul (appeared at [I
 - NetworkX (`pip install networkx`)
 - NumPy (`pip install numpy`)
 
-### Testing
+### Dependencies for Unit Testing
 
 - pytest (`pip install pytest`)
 - pytest-cov (`pip install pytest-cov`)
 - MyPy (`pip install mypy`)
+
+## For Developers
+
+- [Developer Guide](https://github.com/mogproject/modular-decomposition/wiki/Developer-Guide)
+
+| Task | Command |
+| :--- | :--- |
+| Run all unit tests | `make test` |
+| Open Jupyter Lab   | `make lab`  |
 
 ## Special Thanks
 

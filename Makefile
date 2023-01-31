@@ -9,7 +9,7 @@ export MYPYPATH=$(STUB_PY)
 
 test:
 	mypy $(SRC_PY)
-	$(PYTHON) -m pytest -x --cov=. --cov-report=xml:cov.xml $(TEST_PY)
+	$(PYTHON) -m pytest -x --cov=$(SRC_PY) --cov-report=lcov:./coverage/lcov.info $(TEST_PY)
 
 lab:
 	jupyter-lab

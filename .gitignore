@@ -131,7 +131,8 @@ dmypy.json
 
 .vscode
 .DS_Store
-cov.xml
+
+coverage/
 
 .idea
 out/
