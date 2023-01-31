@@ -1,5 +1,7 @@
 # modular-decomposition
 
+[![Unit Test](https://github.com/mogproject/modular-decomposition/actions/workflows/ut.yml/badge.svg)](https://github.com/mogproject/modular-decomposition/actions/workflows/ut.yml)
+
 Graph modular decomposition implemented with C++ and Python 3. 
 
 The code implements the algorithm described in *Simpler, Linear-Time Modular Decomposition via Recursive Factorizing Permutations*
