@@ -20,6 +20,11 @@ jobs:
             - name: Install NumPy
               run: pip install numpy
             - name: Install testing dependencies
-              run: pip install pytest pytest-cov mypy
+              run: pip install pytest pytest-cov mypy coveralls
             - name: Run unit tests
               run: make test
+            - name: Coveralls
+              uses: coverallsapp/github-action@master
+              with:
+                path-to-lcov: ./coverage/lcov.info
+                github-token: ${{ secrets.GITHUB_TOKEN }}
