@@ -8,6 +8,13 @@ by Marc Tedder, Derek Corneil, Michel Habib, and Christophe Paul (appeared at [I
 ## Dependencies
 
 - NetworkX (`pip install networkx`)
+- NumPy (`pip install numpy`)
+
+### Testing
+
+- pytest (`pip install pytest`)
+- pytest-cov (`pip install pytest-cov`)
+- MyPy (`pip install mypy`)
 
 ## Special Thanks
 
