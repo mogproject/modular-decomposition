@@ -1,7 +1,7 @@
 import unittest
 
 from modular.compute.MDComputeNode import MDComputeNode, OperationType, SplitDirection
-from modular.tree.RootedTree import RootedTree
+from modular.tree.RootedForest import RootedForest
 from modular.compute.refinement import get_max_subtrees, refine_one_node, group_sibling_nodes
 
 
@@ -10,7 +10,7 @@ class TestRefinement(unittest.TestCase):
 
     def test_get_max_subtrees(self):
         """Tests get_max_subtrees()."""
-        tree: RootedTree[MDComputeNode] = RootedTree()
+        tree: RootedForest[MDComputeNode] = RootedForest()
         prob = tree.create_node(MDComputeNode.new_problem_node(False))
         op1 = tree.create_node(MDComputeNode.new_operation_node(OperationType.PARALLEL))
         op2 = tree.create_node(MDComputeNode.new_operation_node(OperationType.SERIES))
@@ -45,7 +45,7 @@ class TestRefinement(unittest.TestCase):
         """Tests refine_one_node()."""
 
         def setup():
-            tree: RootedTree[MDComputeNode] = RootedTree()
+            tree: RootedForest[MDComputeNode] = RootedForest()
             prob = tree.create_node(MDComputeNode.new_problem_node(False))
             op0 = tree.create_node(MDComputeNode.new_operation_node(OperationType.PRIME))
             op1 = tree.create_node(MDComputeNode.new_operation_node(OperationType.PRIME))

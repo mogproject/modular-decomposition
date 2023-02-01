@@ -1,12 +1,12 @@
 from typing import Any, Optional
 import networkx as nx
-from modular.tree.RootedTree import RootedTree, Node
+from modular.tree.RootedForest import RootedForest, Node
 from modular.compute.MDComputeNode import MDComputeNode, OperationType
 
 VertexId = Any
 
 
-def remove_extra_components(tree: RootedTree[MDComputeNode], prob: Node[MDComputeNode]) -> Optional[Node[MDComputeNode]]:
+def remove_extra_components(tree: RootedForest[MDComputeNode], prob: Node[MDComputeNode]) -> Optional[Node[MDComputeNode]]:
     subprob = prob.first_child
     while subprob and subprob.data.connected:
         subprob = subprob.right
@@ -22,7 +22,7 @@ def remove_extra_components(tree: RootedTree[MDComputeNode], prob: Node[MDComput
     return ret
 
 
-def remove_layers(tree: RootedTree[MDComputeNode], prob: Node[MDComputeNode]):
+def remove_layers(tree: RootedForest[MDComputeNode], prob: Node[MDComputeNode]):
     for c in prob.get_children():
         tree.replace_by_children(c)
         tree.remove(c)
@@ -36,7 +36,7 @@ def complete_alpha_lists(prob: Node[MDComputeNode], alpha_list: dict[VertexId, s
             alpha_list[a].add(v.data.vertex)
 
 
-def merge_components(tree: RootedTree[MDComputeNode], prob: Node[MDComputeNode], new_components: Optional[Node[MDComputeNode]]):
+def merge_components(tree: RootedForest[MDComputeNode], prob: Node[MDComputeNode], new_components: Optional[Node[MDComputeNode]]):
     if new_components is None:
         return
 

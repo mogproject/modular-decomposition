@@ -1,13 +1,13 @@
 from __future__ import annotations
 from collections import deque
-from typing import Optional, TypeVar, Generic
+from typing import Generator, Optional, TypeVar, Generic
 
 T = TypeVar('T')  # declare type variable
 
 
 class Node(Generic[T]):
     """
-    Represents a node in the tree.
+    Represents a node in the tree/forest.
     """
 
     def __init__(
@@ -67,35 +67,52 @@ class Node(Generic[T]):
                 st += x.get_children()  # result will be right-to-left
         return ret
 
-    def get_subnodes(self, bfs: bool = False) -> list[Node[T]]:
-        """Returns a list of the leaves of this subtree."""
-        ret: list[Node[T]] = []
+# ==============================================================================
+#    Node Traversal
+# ==============================================================================
+    def bfs_nodes(self) -> Generator[Node[T], None, None]:
+        """
+        Returns a generator of nodes in a breadth-first-search ordering
+        starting at this node.
+        """
+        q: deque[Node[T]] = deque()
+        q.append(self)
 
-        if bfs:
-            q: deque[Node[T]] = deque()
-            q.append(self)
+        while q:
+            x = q.popleft()
+            yield x
+            q.extend(x.get_children())
 
-            while q:
-                x = q.popleft()
-                ret += [x]
-                q.extend(x.get_children())
-        else:
-            st: list[Node[T]] = [self]
+    def dfs_preorder_nodes(self) -> Generator[Node[T], None, None]:
+        """
+        Returns a generator of nodes in a depth-first-search (left to right)
+        pre-ordering starting at this node.
+        """
+        st: list[Node[T]] = [self]
 
-            while st:
-                x = st.pop()
-                ret += [x]
-                st += x.get_children()  # result will be right-to-left
-        return ret
+        while st:
+            x = st.pop()
+            yield x
+            st += reversed(x.get_children())
 
-    def get_ancestors(self) -> list[Node[T]]:
-        """Returns a list of the ancestors of this node."""
-        ret = []
+    def dfs_reverse_preorder_nodes(self) -> Generator[Node[T], None, None]:
+        """
+        Returns a generator of nodes in a depth-first-search reverse (right to left)
+        pre-ordering starting at this node.
+        """
+        st: list[Node[T]] = [self]
+
+        while st:
+            x = st.pop()
+            yield x
+            st += x.get_children()
+
+    def get_ancestors(self) -> Generator[Node[T], None, None]:
+        """Returns a generator of the ancestors (bottom to top) of this node."""
         p = self.parent
         while p:
-            ret += [p]
+            yield p
             p = p.parent
-        return ret
 
     def get_root(self) -> Node[T]:
         """Returns the root of this node."""
@@ -108,9 +125,9 @@ class Node(Generic[T]):
         return ret
 
 
-class RootedTree(Generic[T]):
+class RootedForest(Generic[T]):
     """
-    Generic rooted tree (precisely speaking, this class manages rooted forests).
+    Generic rooted forest (disjoint set of rooted trees).
     """
 
     def __init__(self) -> None:
@@ -130,17 +147,6 @@ class RootedTree(Generic[T]):
         self.size += 1
         return node
 
-    # def create_children(self, parent: Node[T], children_data: List[T]):
-    #     if not children_data:
-    #         return
-
-    #     children = [Node(d, parent=parent) for d in children_data]
-    #     children[-1].right = parent.first_child
-
-    #     parent.first_child = children[0]
-    #     for c in children:
-    #         c.parent = parent
-
     def remove(self, node: Node[T]) -> None:
         """Removes the leaf node from the tree."""
         assert node.is_leaf(), 'remove: must be a leaf'
@@ -148,16 +154,6 @@ class RootedTree(Generic[T]):
         self.size -= 1
         self.detach(node)
         self.roots.remove(node)
-
-    # def remove_subtree(self, node: Node[T]) -> None:
-    #     """Removes all the nodes in the subtree."""
-    #     if node.is_leaf():
-    #         self.remove(node)
-    #     else:
-    #         xs = node.get_subnodes()
-    #         self.size -= len(xs)
-    #         self.detach(node)
-    #         self.roots.remove(node)
 
 
 # ==============================================================================

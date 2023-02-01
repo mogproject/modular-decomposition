@@ -3,7 +3,7 @@ from collections import deque
 from typing import Optional
 
 from modular.MDNode import MDNode, VertexId
-from modular.tree.RootedTree import Node
+from modular.tree.RootedForest import Node
 from modular.compute.MDSolver import MDSolver
 from modular.compute_naive.MDNaiveSolver import MDNaiveSolver
 
@@ -33,7 +33,7 @@ class MDTree:
     def sort(self) -> None:
         """Sorts all nodes in lexicographical order."""
 
-        level_order = self.root.get_subnodes(bfs=True)
+        level_order = list(self.root.bfs_nodes())
 
         # first pass (bottom-up): find the (lexicographically) smallest vertex for each module
         min_label: dict[Node[MDNode], VertexId] = {}
@@ -62,7 +62,7 @@ class MDTree:
         """Returns the modular-width."""
 
         ret = 0
-        for c in self.root.get_subnodes():
+        for c in self.root.dfs_reverse_preorder_nodes():
             if c.data.is_prime_node():
                 ret = max(ret, c.number_of_children())
         return ret

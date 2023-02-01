@@ -1,13 +1,13 @@
 from collections import deque
 from typing import Any
-from modular.tree.RootedTree import RootedTree, Node
+from modular.tree.RootedForest import RootedForest, Node
 from modular.compute.MDComputeNode import MDComputeNode, OperationType
 
 VertexId = Any
 
 
 def assemble(
-    tree: RootedTree[MDComputeNode],
+    tree: RootedForest[MDComputeNode],
     vertex_nodes: dict[VertexId, Node[MDComputeNode]],
     alpha_list: dict[VertexId, set[VertexId]],
     prob: Node[MDComputeNode]
@@ -265,7 +265,7 @@ def delineate(
 #    Assemble tree
 # ===============================================================================
 def assemble_tree(
-    tree: RootedTree[MDComputeNode],
+    tree: RootedForest[MDComputeNode],
     ps: list[Node[MDComputeNode]],
     pivot_index: int,
     boundaries: list[tuple[int, int]]
@@ -315,7 +315,7 @@ def assemble_tree(
 # ===============================================================================
 #    Cleaning
 # ===============================================================================
-def remove_degenerate_duplicates(tree: RootedTree[MDComputeNode], node: Node[MDComputeNode]):
+def remove_degenerate_duplicates(tree: RootedForest[MDComputeNode], node: Node[MDComputeNode]):
     op_type = node.data.op_type
 
     for c in node.get_children():

@@ -3,7 +3,7 @@ from collections import deque, defaultdict
 import networkx as nx
 import numpy as np
 
-from modular.tree.RootedTree import RootedTree, Node
+from modular.tree.RootedForest import RootedForest, Node
 from modular.util.matrix_util import equivalent_classes
 from modular.MDNode import MDNode, VertexId
 from modular.OperationType import OperationType
@@ -59,7 +59,7 @@ class MDNaiveSolver:
         return M + M.T
 
     @staticmethod
-    def compute(G: nx.Graph) -> tuple[RootedTree[MDNode], Node[MDNode], list[VertexId]]:
+    def compute(G: nx.Graph) -> tuple[RootedForest[MDNode], Node[MDNode], list[VertexId]]:
         # Implements the algorithm described in
         # "A Fast Algorithm for the Decomposition of Graphs and Posets"
         # Hermann Buer and Rolf H. Möhring (1983)
@@ -73,7 +73,7 @@ class MDNaiveSolver:
         n = len(G)
         vertices = list(G.nodes())
 
-        tree: RootedTree[MDNode] = RootedTree()
+        tree: RootedForest[MDNode] = RootedForest()
         root = tree.create_node(MDNode(None, None, 0, n))
 
         q: deque[Node[MDNode]] = deque()

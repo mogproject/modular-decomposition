@@ -4,7 +4,7 @@ from collections import defaultdict
 import networkx as nx
 from modular.compute.pivot import *
 from modular.compute.MDComputeNode import MDComputeNode
-from modular.tree.RootedTree import RootedTree, Node
+from modular.tree.RootedForest import RootedForest, Node
 
 class TestPivot(unittest.TestCase):
     """Tests pivot module."""
@@ -13,7 +13,7 @@ class TestPivot(unittest.TestCase):
         G: nx.Graph = nx.empty_graph(4)
         G.add_edges_from([(0, 3), (1, 0), (1, 3), (3, 2)])
 
-        tree: RootedTree[MDComputeNode] = RootedTree()
+        tree: RootedForest[MDComputeNode] = RootedForest()
         vertex_nodes = {i: tree.create_node(MDComputeNode.new_vertex_node(i)) for i in G.nodes()}
         alpha_list: dict[int, set[MDComputeNode]] = defaultdict(set)
         visited: set[int] = set()

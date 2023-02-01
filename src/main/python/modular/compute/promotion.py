@@ -1,17 +1,17 @@
-from modular.tree.RootedTree import RootedTree, Node
+from modular.tree.RootedForest import RootedForest, Node
 from modular.compute.MDComputeNode import MDComputeNode, SplitDirection
 
-def promote(tree: RootedTree[MDComputeNode], prob: Node[MDComputeNode]):
+def promote(tree: RootedForest[MDComputeNode], prob: Node[MDComputeNode]):
     promote_one_direction(tree, prob, SplitDirection.LEFT)
     promote_one_direction(tree, prob, SplitDirection.RIGHT)
 
 
-def promote_one_direction(tree: RootedTree[MDComputeNode], prob: Node[MDComputeNode], split_type: SplitDirection):
+def promote_one_direction(tree: RootedForest[MDComputeNode], prob: Node[MDComputeNode], split_type: SplitDirection):
     for c in prob.get_children():
         promote_one_node(tree, c, split_type)
 
 
-def promote_one_node(tree: RootedTree[MDComputeNode], node: Node[MDComputeNode], split_type: SplitDirection):
+def promote_one_node(tree: RootedForest[MDComputeNode], node: Node[MDComputeNode], split_type: SplitDirection):
     to_promote = node.first_child
     while to_promote:
         # print(f'[TRACE] promote node={node}, split={split_type}, node split={node.data.split_type}')

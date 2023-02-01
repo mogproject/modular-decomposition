@@ -2,14 +2,14 @@ import unittest
 
 from modular.compute.assembly import remove_degenerate_duplicates, delineate, compute_mu, assemble_tree
 from modular.compute.MDComputeNode import MDComputeNode, OperationType
-from modular.tree.RootedTree import RootedTree
+from modular.tree.RootedForest import RootedForest
 
 
 class TestAssembly(unittest.TestCase):
     """Tests assembly module."""
 
     def test_remove_degenerate_duplicates(self) -> None:
-        tree: RootedTree[MDComputeNode] = RootedTree()
+        tree: RootedForest[MDComputeNode] = RootedForest()
         vnodes = [tree.create_node(MDComputeNode.new_vertex_node(i)) for i in range(3)]
         n0 = tree.create_node(MDComputeNode.new_operation_node(OperationType.PARALLEL))
         n1 = tree.create_node(MDComputeNode.new_operation_node(OperationType.PARALLEL))
@@ -24,7 +24,7 @@ class TestAssembly(unittest.TestCase):
 
     def test_delineate(self) -> None:
         # K_1
-        tree: RootedTree[MDComputeNode] = RootedTree()
+        tree: RootedForest[MDComputeNode] = RootedForest()
 
         v0 = tree.create_node(MDComputeNode.new_vertex_node(0))
         prob = tree.create_node(MDComputeNode.new_problem_node(False))
@@ -44,7 +44,7 @@ class TestAssembly(unittest.TestCase):
         self.assertEqual(str(root), '(0)')
 
         # 3K_1
-        tree: RootedTree[MDComputeNode] = RootedTree()
+        tree: RootedForest[MDComputeNode] = RootedForest()
         vs = [tree.create_node(MDComputeNode.new_vertex_node(i)) for i in range(3)]
         prob = tree.create_node(MDComputeNode.new_problem_node(False))
         tree.move_to(vs[2], prob)
@@ -65,7 +65,7 @@ class TestAssembly(unittest.TestCase):
         self.assertEqual(str(root), '(U(2)(1)(0))')
 
         # P_3
-        tree: RootedTree[MDComputeNode] = RootedTree()
+        tree: RootedForest[MDComputeNode] = RootedForest()
         vs = [tree.create_node(MDComputeNode.new_vertex_node(i)) for i in range(3)]
         prob = tree.create_node(MDComputeNode.new_problem_node(False))
         tree.move_to(vs[2], prob)

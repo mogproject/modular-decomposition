@@ -1,13 +1,13 @@
 import unittest
 
-from modular.tree.RootedTree import RootedTree
+from modular.tree.RootedForest import RootedForest
 
 
 def parse_bool(s: str): return [c != '0' for c in s]
 
 
-def create_tree():
-    tree = RootedTree()  # type: RootedTree[int]
+def create_forest():
+    tree = RootedForest()  # type: RootedForest[int]
     nodes = [tree.create_node(i) for i in range(20)]
 
     #  0    3       10   13
@@ -24,8 +24,8 @@ def create_tree():
     return tree, nodes
 
 
-class TestRootedTree(unittest.TestCase):
-    """Tests RootedTree class."""
+class TestRootedForest(unittest.TestCase):
+    """Tests RootedForest class."""
 
     def check_consistency(self, nodes):
         for x in nodes:
@@ -43,9 +43,9 @@ class TestRootedTree(unittest.TestCase):
                 self.assertIn(x, x.parent.get_children())
 
     def test_basic_functions(self):
-        tree = RootedTree()  # type: RootedTree[int]
+        tree: RootedForest[int] = RootedForest()
         self.assertFalse(tree)
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
 
         #
         #    Node properties
@@ -117,16 +117,23 @@ class TestRootedTree(unittest.TestCase):
         # consistency check
         self.check_consistency(nodes)
 
-    def test_node_get_subnodes(self):
-        nodes = create_tree()[1]
-        self.assertEqual([x.data for x in nodes[0].get_subnodes()], [0])
-        self.assertEqual([x.data for x in nodes[3].get_subnodes()], [3, 1, 5, 9, 2, 4, 7, 6, 8])
+    def test_node_dfs_reverse_preorder_nodes(self):
+        nodes = create_forest()[1]
+        self.assertEqual([x.data for x in nodes[0].dfs_preorder_nodes()], [0])
+        self.assertEqual([x.data for x in nodes[3].dfs_preorder_nodes()], [3, 4, 7, 8, 6, 5, 2, 9, 1])
 
-        self.assertEqual([x.data for x in nodes[0].get_subnodes(bfs=True)], [0])
-        self.assertEqual([x.data for x in nodes[3].get_subnodes(bfs=True)], [3, 4, 5, 1, 7, 2, 9, 8, 6])
+    def test_node_dfs_reverse_preorder_nodes(self):
+        nodes = create_forest()[1]
+        self.assertEqual([x.data for x in nodes[0].dfs_reverse_preorder_nodes()], [0])
+        self.assertEqual([x.data for x in nodes[3].dfs_reverse_preorder_nodes()], [3, 1, 5, 9, 2, 4, 7, 6, 8])
+
+    def test_node_bfs_nodes(self):
+        nodes = create_forest()[1]
+        self.assertEqual([x.data for x in nodes[0].bfs_nodes()], [0])
+        self.assertEqual([x.data for x in nodes[3].bfs_nodes()], [3, 4, 5, 1, 7, 2, 9, 8, 6])
 
     def test_detach(self):
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(5(2)(9))(1))')
         self.assertEqual(nodes[3].number_of_children(), 3)
         tree.detach(nodes[5])
@@ -148,7 +155,7 @@ class TestRootedTree(unittest.TestCase):
         self.check_consistency(nodes)
 
     def test_remove(self):
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
 
         tree.remove(nodes[2])
         tree.remove(nodes[9])
@@ -183,7 +190,7 @@ class TestRootedTree(unittest.TestCase):
         self.check_consistency(nodes)
 
     def test_swap(self):
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
 
         tree.swap(nodes[5], nodes[15])
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(15(12)(19))(1))')
@@ -204,21 +211,21 @@ class TestRootedTree(unittest.TestCase):
         self.check_consistency(nodes)
 
         # swap with root
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
         tree.swap(nodes[0], nodes[10])
         self.assertSetEqual({node.data for node in tree.roots}, {0, 3, 10, 13})
         tree.swap(nodes[0], nodes[4])
         self.assertSetEqual({node.data for node in tree.roots}, {3, 4, 10, 13})
 
     def test_replace(self):
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
         tree.replace(nodes[3], nodes[5])
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(1))')
         self.assertEqual(str(nodes[5]), '(5(2)(9))')
         self.check_consistency(nodes)
 
     def test_move_to_before(self):
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
 
         tree.move_to_before(nodes[15], nodes[5])
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(15(12)(19))(5(2)(9))(1))')
@@ -234,12 +241,12 @@ class TestRootedTree(unittest.TestCase):
 
         self.check_consistency(nodes)
 
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
         tree.move_to_before(nodes[0], nodes[1])
         self.assertSetEqual({x.data for x in tree.roots}, {3, 10, 13})
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(5(2)(9))(0)(1))')
 
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
         tree.move_to_before(nodes[0], nodes[4])
         self.assertSetEqual({x.data for x in tree.roots}, {3, 10, 13})
         self.assertEqual(str(nodes[3]), '(3(0)(4(7(8)(6)))(5(2)(9))(1))')
@@ -247,7 +254,7 @@ class TestRootedTree(unittest.TestCase):
         self.check_consistency(nodes)
 
     def test_move_to_after(self):
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
 
         tree.move_to_after(nodes[15], nodes[5])
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(5(2)(9))(15(12)(19))(1))')
@@ -262,12 +269,12 @@ class TestRootedTree(unittest.TestCase):
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(11)(14(17(18)(16)))(5(2)(9))(15(12)(19))(1))')
         self.check_consistency(nodes)
 
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
         tree.move_to_after(nodes[0], nodes[1])
         self.assertSetEqual({x.data for x in tree.roots}, {3, 10, 13})
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(5(2)(9))(1)(0))')
 
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
         tree.move_to_after(nodes[0], nodes[4])
         self.assertSetEqual({x.data for x in tree.roots}, {3, 10, 13})
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(0)(5(2)(9))(1))')
@@ -275,7 +282,7 @@ class TestRootedTree(unittest.TestCase):
         self.check_consistency(nodes)
 
     def test_make_first_child(self):
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
 
         tree.make_first_child(nodes[3])
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(5(2)(9))(1))')
@@ -295,7 +302,7 @@ class TestRootedTree(unittest.TestCase):
         self.check_consistency(nodes)
 
     def test_add_children_from(self):
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
 
         tree.add_children_from(nodes[3], nodes[13])
         self.assertEqual(str(nodes[3]), '(3(14(17(18)(16)))(15(12)(19))(11)(4(7(8)(6)))(5(2)(9))(1))')
@@ -319,7 +326,7 @@ class TestRootedTree(unittest.TestCase):
         self.check_consistency(nodes)
 
     def test_replace_by_children(self):
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
 
         tree.replace_by_children(nodes[5])
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(2)(9)(1))')
@@ -340,7 +347,7 @@ class TestRootedTree(unittest.TestCase):
         self.check_consistency(nodes)
 
     def test_replace_children(self):
-        tree, nodes = create_tree()
+        tree, nodes = create_forest()
 
         tree.replace_children(nodes[5], nodes[15])
         self.assertEqual(str(nodes[3]), '(3(4(7(8)(6)))(5(15(12)(19)))(1))')

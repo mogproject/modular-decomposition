@@ -1,6 +1,6 @@
 from typing import Any, Optional
 import networkx as nx
-from modular.tree.RootedTree import RootedTree, Node
+from modular.tree.RootedForest import RootedForest, Node
 from modular.compute.MDComputeNode import MDComputeNode
 
 __all__ = ['do_pivot', 'process_neighbors']
@@ -10,7 +10,7 @@ VertexId = Any
 
 def process_neighbors(
     G: Any,  # nx.Graph
-    tree: RootedTree[MDComputeNode],
+    tree: RootedForest[MDComputeNode],
     vertex_nodes: dict[VertexId, Node[MDComputeNode]],
     alpha_list: dict[VertexId, set[VertexId]],
     visited: set[VertexId],
@@ -35,7 +35,7 @@ def is_pivot_layer(node: Node[MDComputeNode]) -> bool:
 
 
 def pull_forward(
-    tree: RootedTree[MDComputeNode],
+    tree: RootedForest[MDComputeNode],
     vertex_nodes: dict[VertexId, Node[MDComputeNode]],
     v: VertexId
 ):
@@ -65,7 +65,7 @@ def pull_forward(
 
 def do_pivot(
     G: Any,  # nx.Graph
-    tree: RootedTree[MDComputeNode],
+    tree: RootedForest[MDComputeNode],
     vertex_nodes: dict[VertexId, Node[MDComputeNode]],
     alpha_list: dict[VertexId, set[MDComputeNode]],
     visited: set[VertexId],
