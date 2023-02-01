@@ -133,11 +133,13 @@ traces:
         
   0:
     marker:
+      opacity: 0.8
       color: "#19d3f3"
       symbol: "circle"
 
   1:
     marker:
+      opacity: 0.8
       color: "#ef553b"
       symbol: "x"
 
