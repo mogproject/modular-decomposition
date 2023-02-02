@@ -3,7 +3,7 @@ from collections import defaultdict
 
 import networkx as nx
 
-from modular.tree.RootedTree import RootedTree, Node
+from modular.tree.RootedForest import RootedForest, Node
 from modular.MDNode import MDNode, OperationType
 from modular.compute.MDComputeNode import MDComputeNode, NodeType
 from modular.compute.pivot import process_neighbors, do_pivot
@@ -14,13 +14,14 @@ from modular.compute.assembly import assemble
 
 VertexId = Any
 
+
 def trace(message: str, *args: object) -> None:
     print(f'[TRACE] {message}', *args)
 
 
 def compute(
     G: nx.Graph,
-    tree: RootedTree[MDComputeNode],
+    tree: RootedForest[MDComputeNode],
     vertex_nodes: dict[VertexId, Node[MDComputeNode]],
     main_prob: Node[MDComputeNode]
 ) -> Node[MDComputeNode]:
@@ -73,7 +74,7 @@ def compute(
 
             # clear all but visited
             assert current_prob.first_child is not None
-            for c in current_prob.first_child.get_subnodes():
+            for c in current_prob.first_child.dfs_reverse_preorder_nodes():
                 if c.is_leaf() and c.data.vertex in alpha_list:
                     del alpha_list[c.data.vertex]
                 c.data.clear()
@@ -96,7 +97,7 @@ def compute(
 
 class MDSolver:
     @staticmethod
-    def compute(G: Any) -> tuple[RootedTree[MDNode], Node[MDNode], list[VertexId]]:  # nx.Graph
+    def compute(G: nx.Graph) -> tuple[RootedForest[MDNode], Node[MDNode], list[VertexId]]:
         n = len(G)
         assert n > 0, 'empty graph'
 
@@ -106,7 +107,7 @@ class MDSolver:
         labels = nx.get_node_attributes(G, 'label')
 
         # build computation tree
-        tree: RootedTree[MDComputeNode] = RootedTree()
+        tree: RootedForest[MDComputeNode] = RootedForest()
 
         # create the main problem
         main_prob = tree.create_node(MDComputeNode.new_problem_node(connected=False))
@@ -122,7 +123,7 @@ class MDSolver:
         comp_root = compute(G, tree, vertex_nodes, main_prob)
 
         # create result tree
-        result_tree: RootedTree[MDNode] = RootedTree()
+        result_tree: RootedForest[MDNode] = RootedForest()
         mapping: dict[Node[MDComputeNode], Node[MDNode]] = {}
         vertices = []
 
@@ -134,7 +135,7 @@ class MDSolver:
             mapping[comp_node] = nd
 
         # create internal nodes from the bottom
-        for comp_node in reversed(comp_root.get_subnodes(bfs=True)):
+        for comp_node in reversed(list(comp_root.bfs_nodes())):
             if comp_node.data.is_vertex_node():
                 continue
             assert comp_node.data.is_operation_node(), 'there should not be a problem node'

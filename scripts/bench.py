@@ -48,21 +48,27 @@ def get_parser():
 def generate_mw_bounded_graph(n: int, max_mw: int, rand: Random) -> nx.Graph:
     if n == 0:
         return nx.Graph()
+    max_mw = max(max_mw, 3)
 
     G = nx.empty_graph(1)
     while len(G) < n:
         # pick a vertex to substitute
         prev_n = len(G)
         x = rand.randint(0, prev_n - 1)
+
         # create a replacement
-        nn = min(n - prev_n, max_mw)
+        nn = min(n - prev_n + 1, max_mw)
         H = nx.erdos_renyi_graph(nn, 0.5, seed=rand)
+        labels = {i: prev_n + i if i < nn - 1 else x for i in range(nn)}
+
         # substitue
-        G.add_nodes_from(range(len(G), len(G) + len(H)))
-        G = nx.disjoint_union(G, H)
         nbrs = list(G.neighbors(x))
-        for i in range(nn):
-            G.add_edges_from((prev_n + i, u) for u in nbrs)
+        G.remove_node(x)
+        G.add_node(x)
+        G.add_nodes_from(range(prev_n, prev_n + nn - 1))
+
+        G.add_edges_from((labels[u], labels[v]) for u, v, in H.edges())
+        G.add_edges_from((labels[i], u) for i in range(nn) for u in nbrs)
     return G
 
 
@@ -78,6 +84,7 @@ def bench_one_instance(G: nx.Graph, num_iterations: int = 3):
             elapsed = time_end - time_start
             mw = t.modular_width()
             print(f'{n},{m},{solver},{mw},{elapsed}')
+        break
 
 
 def main(args):
@@ -92,12 +99,15 @@ def main(args):
     logger.info('Output format: n, m, solver, modular-width, elapsed (sec)')
 
     rand = Random(args.seed)
+    sys.setrecursionlimit(100000)
 
     # benchmark on Erdos-Renyi graphs
     logger.info('Benchmarking on Erdos-Renyi graphs.')
-    for n in [100, 200, 500, 1000]:
+    for n in [100, 200, 500]:
         for p in [0.1, 0.2, 0.3, 0.4, 0.5]:
-            bench_one_instance(nx.erdos_renyi_graph(n, p, seed=rand))
+            G = nx.erdos_renyi_graph(n, p, seed=rand)
+            bench_one_instance(G)
+            bench_one_instance(nx.complement(G))
 
     # benchmark on modular-width bounded graphs
     logger.info('Benchmarking on mw-bounded graphs.')
@@ -105,6 +115,7 @@ def main(args):
         for mw in [4, 5, 10, 20, 50]:
             G = generate_mw_bounded_graph(n, mw, rand)
             bench_one_instance(G)
+            bench_one_instance(nx.complement(G))
 
     logger.info(f'Finished: {SCRIPT_PATH}')
 

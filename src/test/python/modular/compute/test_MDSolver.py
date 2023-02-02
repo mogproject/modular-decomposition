@@ -4,7 +4,7 @@ import networkx as nx
 from modular.compute.assembly import remove_degenerate_duplicates, delineate, compute_mu, assemble_tree
 from modular.compute.MDComputeNode import MDComputeNode, OperationType
 from modular.compute.MDSolver import MDSolver
-from modular.tree.RootedTree import RootedTree
+from modular.tree.RootedForest import RootedForest
 
 
 class TestMDSolver(unittest.TestCase):

@@ -1,6 +1,6 @@
-from collections import defaultdict
+from collections import defaultdict, deque
 from typing import Any
-from modular.tree.RootedTree import RootedTree, Node
+from modular.tree.RootedForest import RootedForest, Node
 from modular.compute.MDComputeNode import MDComputeNode, OperationType, SplitDirection
 
 __all__ = ['refine']
@@ -13,7 +13,7 @@ def trace(message: str, *args: object) -> None:
 
 
 def refine(
-    tree: RootedTree[MDComputeNode],
+    tree: RootedForest[MDComputeNode],
     vertex_nodes: dict[VertexId, Node[MDComputeNode]],
     alpha_list: dict[VertexId, set[VertexId]],
     prob: Node[MDComputeNode]
@@ -45,11 +45,11 @@ def number_by_comp(prob: Node[MDComputeNode]) -> None:
 
         if c.data.op_type == op_type:
             for x in c.get_children():
-                for y in x.get_subnodes():
+                for y in x.dfs_reverse_preorder_nodes():
                     y.data.comp_number = comp_number
                 comp_number += 1
         else:
-            for y in c.get_subnodes():
+            for y in c.dfs_reverse_preorder_nodes():
                 y.data.comp_number = comp_number
             comp_number += 1
 
@@ -58,7 +58,7 @@ def number_by_tree(prob: Node[MDComputeNode]) -> None:
     """Updtaes the tree number for each node in the given problem subtree."""
     tree_number = 0
     for c in prob.get_children():
-        for y in c.get_subnodes():
+        for y in c.dfs_reverse_preorder_nodes():
             y.data.tree_number = tree_number
         tree_number += 1
 
@@ -73,14 +73,6 @@ def is_root_operator(node: Node[MDComputeNode]) -> bool:
 # ===============================================================================
 #    Marking split types
 # ===============================================================================
-def mark_children_by_split(node: Node[MDComputeNode], split_type: SplitDirection) -> None:
-    """Adds the given mark to all of the node's children."""
-    for c in node.get_children():
-        # this check is essential to keep the program linear-time
-        if not c.data.is_split_marked(split_type):
-            add_split_mark(c, split_type, should_recurse=False)
-
-
 def mark_ancestors_by_split(node: Node[MDComputeNode], split_type: SplitDirection) -> None:
     """Adds the given mark to all of the node's ancestors."""
     for p in node.get_ancestors():
@@ -90,10 +82,13 @@ def mark_ancestors_by_split(node: Node[MDComputeNode], split_type: SplitDirectio
 
 
 def add_split_mark(node: Node[MDComputeNode], split_type: SplitDirection, should_recurse: bool) -> None:
+    """Add the given mark to the node and possibly its children."""
     node.data.set_split_mark(split_type)
 
     if should_recurse and node.data.op_type == OperationType.PRIME:
-        mark_children_by_split(node, split_type)
+        for c in node.get_children():
+            if not c.data.is_split_marked(split_type):
+                c.data.set_split_mark(split_type)
 
 
 # ===============================================================================
@@ -136,7 +131,7 @@ def get_max_subtrees(leaves: list[Node[MDComputeNode]]) -> list[Node[MDComputeNo
 #    Group sibling nodes
 # ===============================================================================
 def group_sibling_nodes(
-    tree: RootedTree[MDComputeNode],
+    tree: RootedForest[MDComputeNode],
     nodes: list[Node[MDComputeNode]]
 ) -> list[tuple[Node[MDComputeNode], bool]]:
     num_marks: dict[Node[MDComputeNode], int] = defaultdict(int)
@@ -200,7 +195,7 @@ def get_split_type(
 
 
 def refine_one_node(
-    tree: RootedTree[MDComputeNode],
+    tree: RootedForest[MDComputeNode],
     node: Node[MDComputeNode],
     split_type: SplitDirection,
     new_prime: bool,
@@ -210,7 +205,7 @@ def refine_one_node(
 
     p = node.parent
     new_sibling = None
-    new_sibling_prime = False
+
     assert p is not None
 
     if is_root_operator(p):
@@ -248,7 +243,7 @@ def refine_one_node(
 
 
 def refine_with(
-    tree: RootedTree[MDComputeNode],
+    tree: RootedForest[MDComputeNode],
     vertex_nodes: dict[VertexId, Node[MDComputeNode]],
     alpha_list: dict[VertexId, set[VertexId]],
     refiner: VertexId,
