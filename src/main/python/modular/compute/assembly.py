@@ -316,10 +316,9 @@ def assemble_tree(
 #    Cleaning
 # ===============================================================================
 def remove_degenerate_duplicates(tree: RootedForest[MDComputeNode], node: Node[MDComputeNode]):
-    op_type = node.data.op_type
-
-    for c in node.get_children():
-        remove_degenerate_duplicates(tree, c)
-        if c.data.op_type == op_type and op_type != OperationType.PRIME:
+    for c in reversed(list(node.bfs_nodes())):
+        if c == node or c.parent is None:
+            break
+        if c.data.op_type == c.parent.data.op_type and c.data.op_type != OperationType.PRIME:
             tree.replace_by_children(c)
             tree.remove(c)

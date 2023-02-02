@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, deque
 from typing import Any
 from modular.tree.RootedForest import RootedForest, Node
 from modular.compute.MDComputeNode import MDComputeNode, OperationType, SplitDirection
@@ -73,14 +73,6 @@ def is_root_operator(node: Node[MDComputeNode]) -> bool:
 # ===============================================================================
 #    Marking split types
 # ===============================================================================
-def mark_children_by_split(node: Node[MDComputeNode], split_type: SplitDirection) -> None:
-    """Adds the given mark to all of the node's children."""
-    for c in node.get_children():
-        # this check is essential to keep the program linear-time
-        if not c.data.is_split_marked(split_type):
-            add_split_mark(c, split_type, should_recurse=False)
-
-
 def mark_ancestors_by_split(node: Node[MDComputeNode], split_type: SplitDirection) -> None:
     """Adds the given mark to all of the node's ancestors."""
     for p in node.get_ancestors():
@@ -90,10 +82,13 @@ def mark_ancestors_by_split(node: Node[MDComputeNode], split_type: SplitDirectio
 
 
 def add_split_mark(node: Node[MDComputeNode], split_type: SplitDirection, should_recurse: bool) -> None:
+    """Add the given mark to the node and possibly its children."""
     node.data.set_split_mark(split_type)
 
     if should_recurse and node.data.op_type == OperationType.PRIME:
-        mark_children_by_split(node, split_type)
+        for c in node.get_children():
+            if not c.data.is_split_marked(split_type):
+                c.data.set_split_mark(split_type)
 
 
 # ===============================================================================
@@ -210,7 +205,7 @@ def refine_one_node(
 
     p = node.parent
     new_sibling = None
-    new_sibling_prime = False
+
     assert p is not None
 
     if is_root_operator(p):

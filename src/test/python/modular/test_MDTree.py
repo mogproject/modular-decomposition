@@ -36,24 +36,30 @@ class TestMDTree(unittest.TestCase):
         self.assertEqual(t_naive.modular_width(), p_naive.modular_width(), msg=f'n={len(G)}, edges={G.edges()}')
         self.assertEqual(t_naive.modular_width(), p_linear.modular_width(), msg=f'n={len(G)}, edges={G.edges()}')
 
-    def generate_bounded_mw_graph(self, n: int, max_mw: int, rand: Random) -> nx.Graph:
+    def generate_mw_bounded_graph(self, n: int, max_mw: int, p: float, rand: Random) -> nx.Graph:
         if n == 0:
             return nx.Graph()
+        max_mw = max(max_mw, 3)
 
         G = nx.empty_graph(1)
         while len(G) < n:
             # pick a vertex to substitute
             prev_n = len(G)
             x = rand.randint(0, prev_n - 1)
+
             # create a replacement
-            nn = min(n - prev_n, max_mw)
-            H = nx.erdos_renyi_graph(nn, 0.5, seed=rand)
+            nn = min(n - prev_n + 1, max_mw)
+            H = nx.erdos_renyi_graph(nn, p, seed=rand)
+            labels = {i: prev_n + i if i < nn - 1 else x for i in range(nn)}
+
             # substitue
-            G.add_nodes_from(range(len(G), len(G) + len(H)))
-            G = nx.disjoint_union(G, H)
             nbrs = list(G.neighbors(x))
-            for i in range(nn):
-                G.add_edges_from((prev_n + i, u) for u in nbrs)
+            G.remove_node(x)
+            G.add_node(x)
+            G.add_nodes_from(range(prev_n, prev_n + nn - 1))
+
+            G.add_edges_from((labels[u], labels[v]) for u, v, in H.edges())
+            G.add_edges_from((labels[i], u) for i in range(nn) for u in nbrs)
         return G
 
     def test_modular_decomposition(self):
@@ -375,17 +381,32 @@ class TestMDTree(unittest.TestCase):
                     G = nx.erdos_renyi_graph(n, p, seed=rand)
                     self.check_property(G)
 
-    def test_modular_decomposition_random_bounded_mw(self):
+    def test_modular_decomposition_random_mw_bounded(self):
         rand = Random(12345)
         min_n = 30
         max_n = 50
         step_n = 5
         num_iterations = 10
         mw = 5
+        p = 0.5
 
         for n in range(min_n, max_n + 1, step_n):
             for _ in range(num_iterations):
-                G = self.generate_bounded_mw_graph(n, mw, rand)
+                G = self.generate_mw_bounded_graph(n, mw, p, rand)
                 t = modular_decomposition(G, solver='linear')
                 self.assertLessEqual(t.modular_width(), mw)
                 self.check_property(G)
+
+    def test_modular_decomposition_random_mw_bounded_large(self):
+        import sys
+        rec_lim = sys.getrecursionlimit()
+        rand = Random(12345)
+
+        for _ in range(10):
+            G = self.generate_mw_bounded_graph(500, 4, 0.5, rand)
+        
+            sys.setrecursionlimit(70)
+            t = modular_decomposition(G, solver='linear')
+            sys.setrecursionlimit(rec_lim)
+
+            self.assertLessEqual(t.modular_width(), 4)

@@ -29,11 +29,11 @@ class Node(Generic[T]):
     # I/O
     def __str__(self) -> str:
         """Recursively prints the subtree."""
-        return '(' + str(self.data) + ''.join(str(c) for c in self.get_children()) + ')'
+        return ''.join(('(' + str(node.data) if enter else ')') for node, enter in self.dfs_preorder_edges())
 
     def __repr__(self) -> str:
         """Recursively prints the subtree."""
-        return '(' + repr(self.data) + ''.join(repr(c) for c in self.get_children()) + ')'
+        return ''.join(('(' + repr(node.data) if enter else ')') for node, enter in self.dfs_preorder_edges())
 
     # Utilities
     def is_root(self) -> bool: return self.parent is None
@@ -55,21 +55,46 @@ class Node(Generic[T]):
         return ret
 
     def get_leaves(self) -> list[Node[T]]:
-        """Returns a list of the leaves of this subtree."""
-        ret: list[Node[T]] = []
-        st: list[Node[T]] = [self]
-
-        while st:
-            x = st.pop()
-            if x.is_leaf():
-                ret += [x]
-            else:
-                st += x.get_children()  # result will be right-to-left
-        return ret
+        """Returns a list of the leaves of this subtree, from the left to the right."""
+        return [node for node in self.dfs_reverse_preorder_nodes() if node.is_leaf()]
 
 # ==============================================================================
 #    Node Traversal
 # ==============================================================================
+    def dfs_preorder_edges(self) -> Generator[tuple[Node[T], bool], None, None]:
+        """
+        Returns a generator of pairs of nodes and directions of the traversal
+        in a depth-first-search (left to right) pre-ordering starting at this node.
+
+        Returns: generator of [node, entering (True) or leaving (False)]
+                 entering: traverse from node.parent to node
+                 leaving:  traverse from node to node.parent
+        """
+        st: list[tuple[Node[T], bool]] = [(self, False), (self, True)]
+
+        while st:
+            x, enter = st.pop()
+            yield x, enter
+            if enter:
+                for c in reversed(x.get_children()):
+                    st += [(c, False), (c, True)]
+
+    def dfs_reverse_preorder_edges(self) -> Generator[tuple[Node[T], bool], None, None]:
+        """
+        Returns a generator of pairs of nodes and directions of the traversal
+        in a reverse depth-first-search (right to left) pre-ordering starting at this node.
+
+        Returns: generator of [node, entering (True) or leaving (False)]
+        """
+        st: list[tuple[Node[T], bool]] = [(self, False), (self, True)]
+
+        while st:
+            x, enter = st.pop()
+            yield x, enter
+            if enter:
+                for c in x.get_children():
+                    st += [(c, False), (c, True)]
+
     def bfs_nodes(self) -> Generator[Node[T], None, None]:
         """
         Returns a generator of nodes in a breadth-first-search ordering
@@ -159,7 +184,6 @@ class RootedForest(Generic[T]):
 # ==============================================================================
 #    Modification
 # ==============================================================================
-
 
     def detach(self, node: Node[T]) -> None:
         """Detaches the node from its parent and adds it to the root set."""
