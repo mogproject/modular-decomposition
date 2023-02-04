@@ -3,7 +3,7 @@ PYTHON=python3
 
 SRC_CPP=src/main/cpp
 BUILD_DIR=$(PWD)/build
-TEST_BIN_DIR=bin/test
+TEST_BIN_DIR=$(BUILD_DIR)/test
 TEST_EXEC=$(TEST_BIN_DIR)/tww_test
 
 SRC_PY=src/main/python
@@ -29,7 +29,7 @@ test-cpp:
 
 clean:
 	@echo "Cleaning..."
-	@$(RM) -rf build/* bin/*
+	@$(RM) -rf build/*
 	@echo "Cleaning done."
 
 lab:

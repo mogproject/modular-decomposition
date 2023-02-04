@@ -8,14 +8,21 @@ The code implements the algorithm described in *Simpler, Linear-Time Modular Dec
 
 ## Dependencies
 
-- NetworkX (`pip install networkx`)
-- NumPy (`pip install numpy`)
+- C++
+  - gcc version 11 or 12
+  - CMake
+- Python
+  - NetworkX (`pip install networkx`)
+  - NumPy (`pip install numpy`)
 
 #### Dependencies for Unit Testing
 
-- pytest (`pip install pytest`)
-- pytest-cov (`pip install pytest-cov`)
-- MyPy (`pip install mypy`)
+- C++
+  - GoogleTest (automatically installed during the build process)
+- Python
+  - pytest (`pip install pytest`)
+  - pytest-cov (`pip install pytest-cov`)
+  - MyPy (`pip install mypy`)
 
 ## Installation
 

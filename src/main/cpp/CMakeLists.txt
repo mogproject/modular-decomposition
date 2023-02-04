@@ -43,7 +43,7 @@ set(CMAKE_CXX_FLAGS "-Wall -funroll-loops -fno-stack-limit -O3")
 
 # tests with GoogleTest
 if (BUILD_TESTS)
-  add_subdirectory(../../test/cpp ../../bin/test)
+  add_subdirectory(../../test/cpp ../test)
 else ()
   # add_executable(bench ${BENCH_SRC} ${MAIN_SRC})
 endif ()

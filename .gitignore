@@ -137,5 +137,4 @@ coverage/
 .idea
 out/
 *.iml
-bin/
 
