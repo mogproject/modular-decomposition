@@ -1,4 +1,10 @@
+RM = /bin/rm
 PYTHON=python3
+
+SRC_CPP=src/main/cpp
+BUILD_DIR=$(PWD)/build
+TEST_BIN_DIR=bin/test
+TEST_EXEC=$(TEST_BIN_DIR)/tww_test
 
 SRC_PY=src/main/python
 TEST_PY=src/test/python
@@ -9,11 +15,24 @@ PYTEST_OPTS=""  # --full-trace
 export PYTHONPATH=$(SRC_PY)
 export MYPYPATH=$(STUB_PY)
 
-test:
+test: test-cpp test-py
+
+test-py:
 	mypy $(SRC_PY)
 	$(PYTHON) -m pytest -x --cov=$(SRC_PY) --cov-report=lcov:./coverage/lcov.info $(PYTEST_OPTS) $(TEST_PY)
+
+test-cpp:
+	@echo "GTEST_FILTER: $(GTEST_FILTER)"
+	cd $(SRC_CPP) && cmake -DBUILD_TESTS=ON -S . -B $(BUILD_DIR)/Debug
+	cd $(SRC_CPP) && cmake --build $(BUILD_DIR)/Debug
+	$(TEST_EXEC) --output-on-failure $(GTEST_OPTS)
+
+clean:
+	@echo "Cleaning..."
+	@$(RM) -rf build/* bin/*
+	@echo "Cleaning done."
 
 lab:
 	jupyter-lab
 
-.PHONY: test lab
+.PHONY: test test-cpp clean lab

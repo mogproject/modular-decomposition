@@ -28,6 +28,9 @@ TBD
 | Task | Command | Note |
 | :--- | :--- | :--- |
 | Run all unit tests | `make test` | Coverage info will be created as `coverage/lcov.info`. |
+| Run C++ unit tests | `make test-cpp` ||
+| Run Python unit tests | `make test-py` ||
+| Clean build and binary files | `make clean` ||
 | Open Jupyter Lab   | `make lab`  | Jupyter Notebooks are in the `notebooks` directory.|
 
 ## Special Thanks
