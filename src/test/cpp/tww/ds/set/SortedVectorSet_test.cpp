@@ -1,14 +1,12 @@
 #include <gtest/gtest.h>
 
-#include <set>
-
-#include "tww/ds/set/ArrayBitset.hpp"
+#include "tww/ds/set/SortedVectorSet.hpp"
 #include "tww/util/Random.hpp"
 
 using namespace tww::ds;
 
-TEST(ArrayBitsetTest, BasicOperations) {
-  auto s = ArrayBitset11(2000);
+TEST(SortedVectorSetTest, BasicOperations) {
+  auto s = SortedVectorSet();
   EXPECT_TRUE(s.empty());
 
   s.set(0);
@@ -52,10 +50,10 @@ TEST(ArrayBitsetTest, BasicOperations) {
   EXPECT_EQ(s.size(), 0);
 }
 
-TEST(ArrayBitsetTest, RandomInput) {
+TEST(SortedVectorSetTest, RandomInput) {
   tww::util::Random rand(12345);
 
-  auto b = ArrayBitset14(10000);
+  auto b = SortedVectorSet();
   std::set<int> s;
 
   for (int t = 0; t < 10; ++t) {
@@ -84,8 +82,8 @@ TEST(ArrayBitsetTest, RandomInput) {
   }
 }
 
-TEST(ArrayBitsetTest, PopFront) {
-  auto s = ArrayBitset14(10000);
+TEST(SortedVectorSetTest, PopFront) {
+  auto s = SortedVectorSet();
   s.set(10);
   s.set(20);
   s.set(5);
@@ -96,15 +94,14 @@ TEST(ArrayBitsetTest, PopFront) {
   EXPECT_EQ(s.pop_front(), -1);
 }
 
-// to be implemented
-// TEST(ArrayBitsetTest, PopBack) {
-//   auto s = ArrayBitset14(10000);
-//   s.set(10);
-//   s.set(20);
-//   s.set(5);
-//   EXPECT_EQ(s.back(), 20);
-//   EXPECT_EQ(s.pop_back(), 20);
-//   EXPECT_EQ(s.pop_back(), 10);
-//   EXPECT_EQ(s.pop_back(), 5);
-//   EXPECT_EQ(s.pop_back(), -1);
-// }
+TEST(SortedVectorSetTest, PopBack) {
+  auto s = SortedVectorSet();
+  s.set(10);
+  s.set(20);
+  s.set(5);
+  EXPECT_EQ(s.back(), 20);
+  EXPECT_EQ(s.pop_back(), 20);
+  EXPECT_EQ(s.pop_back(), 10);
+  EXPECT_EQ(s.pop_back(), 5);
+  EXPECT_EQ(s.pop_back(), -1);
+}

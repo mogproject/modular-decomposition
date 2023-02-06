@@ -1,16 +1,23 @@
+#pragma once
+
 #include <vector>
+#include <algorithm>
+
+#include "tww/ds/set/basic_set.hpp"
 
 namespace tww {
 namespace ds {
 
-class SortedVectorSet {
+class SortedVectorSet : basic_set<int> {
  private:
   std::vector<int> data_;
 
  public:
-  SortedVectorSet(int capacity = 0) {}
+  SortedVectorSet() {}
 
   std::size_t size() const { return data_.size(); }
+
+  int capacity() const { return -1; }
 
   void set(int x) {
     auto it = std::lower_bound(data_.begin(), data_.end(), x);
@@ -32,6 +39,24 @@ class SortedVectorSet {
   void clear() { data_.clear(); }
 
   std::vector<int> to_vector() const { return data_; }
+
+  int front() const { return empty() ? -1 : data_.front(); }
+
+  int pop_front() {
+    if (empty()) return -1;
+    int ret = data_.front();
+    data_.erase(data_.begin());
+    return ret;
+  }
+
+  int back() const { return empty() ? -1 : data_.back(); }
+
+  int pop_back() {
+    if (empty()) return -1;
+    int ret = data_.back();
+    data_.pop_back();
+    return ret;
+  }
 
   static SortedVectorSet intersect(SortedVectorSet const& s, SortedVectorSet const& t) {
     SortedVectorSet result;

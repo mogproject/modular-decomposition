@@ -9,15 +9,14 @@
 #include <stdexcept>
 #include <vector>
 
+#include "tww/ds/set/basic_set.hpp"
 #include "tww/util/util.hpp"
-
-#define ARRAY_BITSET(n) tww::ds::ArrayBitset<uint64_t, ((n)  + 63) / 64, false>(n)
 
 namespace tww {
 namespace ds {
 
 template <typename DataType, int N, bool Validate>
-class ArrayBitset {
+class ArrayBitset : basic_set<int> {
  private:
   std::size_t capacity_;
   DataType data_[N];
@@ -50,7 +49,7 @@ class ArrayBitset {
   }
 
  public:
-  ArrayBitset(std::size_t n = 0) {
+  ArrayBitset(std::size_t n = 0): capacity_(n) {
     if (n > B * N) throw std::invalid_argument("ArrayBitset: n too large");
     if (N > 0) std::memset(data_, 0, std::max(1UL, sizeof(data_)));
   }
@@ -94,7 +93,7 @@ class ArrayBitset {
     return true;
   }
 
-  inline int front() const {
+  int front() const {
     int ret = -1;
     for (std::size_t i = 0; i < N; ++i) {
       if (data_[i]) {
@@ -105,8 +104,8 @@ class ArrayBitset {
     return ret < static_cast<int>(capacity_) ? ret : -1;
   }
 
-  inline int pop_front() {
-    for (std::size_t i = 0; i < N; ++i)
+  int pop_front() {
+    for (std::size_t i = 0; i < N; ++i) {
       if (data_[i]) {
         std::size_t offset = ctz(data_[i]);
         std::size_t ret = i * B + offset;
@@ -115,6 +114,17 @@ class ArrayBitset {
           return ret;
         }
       }
+    }
+    return -1;
+  }
+
+  int back() const {
+    throw std::runtime_error("not implemented");
+    return -1;
+  }
+
+  int pop_back() {
+    throw std::runtime_error("not implemented");
     return -1;
   }
 
@@ -257,6 +267,8 @@ class ArrayBitset {
     return ret;
   }
 
+  int capacity() const { return capacity_; }
+
   inline bool subset(This const& rhs) const { return (*this & rhs) == *this; }
 
   inline bool superset(This const& rhs) const { return rhs.subset(*this); }
@@ -270,5 +282,19 @@ class ArrayBitset {
   static This intersect(This const& s, This const& t) { return s & t; }
   static This Union(This const& s, This const& t) { return s | t; }
 };
+
+typedef ArrayBitset<uint64_t, 1, false> ArrayBitset6;         // supports up to 0 <= x < 64
+typedef ArrayBitset<uint64_t, 1 << 1, false> ArrayBitset7;    // supports up to 0 <= x < 128
+typedef ArrayBitset<uint64_t, 1 << 2, false> ArrayBitset8;    // supports up to 0 <= x < 256
+typedef ArrayBitset<uint64_t, 1 << 3, false> ArrayBitset9;    // supports up to 0 <= x < 512
+typedef ArrayBitset<uint64_t, 1 << 4, false> ArrayBitset10;   // supports up to 0 <= x < 1024
+typedef ArrayBitset<uint64_t, 1 << 5, false> ArrayBitset11;   // supports up to 0 <= x < 2048
+typedef ArrayBitset<uint64_t, 1 << 6, false> ArrayBitset12;   // supports up to 0 <= x < 4096
+typedef ArrayBitset<uint64_t, 1 << 7, false> ArrayBitset13;   // supports up to 0 <= x < 8192
+typedef ArrayBitset<uint64_t, 1 << 8, false> ArrayBitset14;   // supports up to 0 <= x < 16384
+typedef ArrayBitset<uint64_t, 1 << 9, false> ArrayBitset15;   // supports up to 0 <= x < 32768
+typedef ArrayBitset<uint64_t, 1 << 10, false> ArrayBitset16;  // supports up to 0 <= x < 65536
+typedef ArrayBitset<uint64_t, 1 << 11, false> ArrayBitset17;  // supports up to 0 <= x < 131072
+
 }  // namespace ds
 }  // namespace tww
