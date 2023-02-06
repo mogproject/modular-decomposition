@@ -9,7 +9,7 @@ VertexId = Any
 
 
 def process_neighbors(
-    G: Any,  # nx.Graph
+    G: nx.Graph,
     tree: RootedForest[MDComputeNode],
     vertex_nodes: dict[VertexId, Node[MDComputeNode]],
     alpha_list: dict[VertexId, set[VertexId]],
@@ -64,7 +64,7 @@ def pull_forward(
 
 
 def do_pivot(
-    G: Any,  # nx.Graph
+    G: nx.Graph,
     tree: RootedForest[MDComputeNode],
     vertex_nodes: dict[VertexId, Node[MDComputeNode]],
     alpha_list: dict[VertexId, set[MDComputeNode]],
