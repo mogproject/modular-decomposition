@@ -8,7 +8,7 @@
 namespace tww {
 namespace ds {
 
-class SortedVectorSet : basic_set<int> {
+class SortedVectorSet : public basic_set<int> {
  private:
   std::vector<int> data_;
 

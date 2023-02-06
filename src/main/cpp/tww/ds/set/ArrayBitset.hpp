@@ -16,7 +16,7 @@ namespace tww {
 namespace ds {
 
 template <typename DataType, int N, bool Validate>
-class ArrayBitset : basic_set<int> {
+class ArrayBitset : public basic_set<int> {
  private:
   std::size_t capacity_;
   DataType data_[N];
