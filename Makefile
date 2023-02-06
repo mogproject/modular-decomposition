@@ -4,7 +4,7 @@ PYTHON=python3
 SRC_CPP=src/main/cpp
 BUILD_DIR=$(PWD)/build
 TEST_BIN_DIR=$(BUILD_DIR)/test
-TEST_EXEC=$(TEST_BIN_DIR)/tww_test
+TEST_EXEC=$(TEST_BIN_DIR)/modular_test
 
 SRC_PY=src/main/python
 TEST_PY=src/test/python

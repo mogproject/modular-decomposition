@@ -25,8 +25,9 @@ message("Compiler: ${CMAKE_CXX_COMPILER}")
 
 # source files
 file(GLOB_RECURSE MAIN_SRC
-  tww/ds/set/*.[ch]pp
-  tww/util/*.[ch]pp
+  ds/*.[ch]pp
+  modular/*.[ch]pp
+  util/*.[ch]pp
 )
 
 include_directories(
@@ -38,8 +39,20 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif ()
 
 # project
-project(tww)
+project(modular)
 set(CMAKE_CXX_FLAGS "-Wall -funroll-loops -fno-stack-limit -O3")
+
+# build options
+if (NOT DEFINED PROFILE_ON)
+  set(PROFILE_ON false)
+endif ()
+
+if (NOT DEFINED TRACE_ON)
+  set(TRACE_ON false)
+endif ()
+
+add_compile_definitions(PROFILE_ON=${PROFILE_ON})
+add_compile_definitions(TRACE_ON=${TRACE_ON})
 
 # tests with GoogleTest
 if (BUILD_TESTS)
