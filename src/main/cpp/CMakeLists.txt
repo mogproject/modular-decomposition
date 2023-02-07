@@ -27,8 +27,11 @@ message("Compiler: ${CMAKE_CXX_COMPILER}")
 file(GLOB_RECURSE MAIN_SRC
   ds/*.[ch]pp
   modular/*.[ch]pp
+  readwrite/*.[ch]pp
   util/*.[ch]pp
 )
+
+file(GLOB BENCH_SRC modular-bench.cpp)
 
 include_directories(
   .
@@ -58,5 +61,5 @@ add_compile_definitions(TRACE_ON=${TRACE_ON})
 if (BUILD_TESTS)
   add_subdirectory(../../test/cpp ../test)
 else ()
-  # add_executable(bench ${BENCH_SRC} ${MAIN_SRC})
+  add_executable(modular-bench ${BENCH_SRC} ${MAIN_SRC})
 endif ()

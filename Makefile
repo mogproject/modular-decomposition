@@ -15,6 +15,13 @@ PYTEST_OPTS=""  # --full-trace
 export PYTHONPATH=$(SRC_PY)
 export MYPYPATH=$(STUB_PY)
 
+PROFILE_ON ?= false
+TRACE_ON ?= false
+
+build:
+	cd $(SRC_CPP) && cmake -S . -B $(BUILD_DIR)/Release -DCMAKE_BUILD_TYPE=Release -DPROFILE_ON=$(PROFILE_ON) -DTRACE_ON=$(TRACE_ON)
+	cd $(SRC_CPP) && cmake --build $(BUILD_DIR)/Release
+
 test: test-cpp test-py
 
 test-py:
@@ -35,4 +42,4 @@ clean:
 lab:
 	jupyter-lab
 
-.PHONY: test test-cpp clean lab
+.PHONY: build test test-cpp clean lab

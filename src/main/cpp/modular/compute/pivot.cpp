@@ -33,7 +33,7 @@ static void pull_forward(CompTree& tree, VertexID v) {
     auto new_layer = tree.create_node(MDComputeNode::new_problem_node(true));  // connected problem
     tree.move_to_before(new_layer, current_layer);
     prev_layer = new_layer;
-    TRACE("new layer formed: %s\n", tree.to_string(tree[prev_layer].parent).c_str());
+    TRACE("new layer formed: %s", tree.to_string(tree[prev_layer].parent).c_str());
   }
 
   if (tree[prev_layer].data.connected) tree.move_to(v, prev_layer);
@@ -77,8 +77,8 @@ int do_pivot(ds::graph::Graph const& graph,  //
              int prob,                       //
              VertexID pivot                  //
 ) {
-  TRACE("start: %s\n", tree.to_string(prob).c_str());
-  TRACE("pivot: %d\n", pivot);
+  TRACE("start: %s", tree.to_string(prob).c_str());
+  TRACE("pivot: %d", pivot);
 
   // Replace this subproblem with a new one sharing the same attributes.
   // Reuse the current recursive subproblem for non-neighbors of p.
@@ -109,7 +109,7 @@ int do_pivot(ds::graph::Graph const& graph,  //
   // Clean up: no neighbors of p in this problem.
   if (tree[nbr_prob].is_leaf()) tree.remove(nbr_prob);
 
-  TRACE("return: %d: %s\n", replacement, tree.to_string(replacement).c_str());
+  TRACE("return: %d: %s", replacement, tree.to_string(replacement).c_str());
   return replacement;
 }
 

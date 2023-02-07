@@ -367,6 +367,18 @@ class TestMDTree(unittest.TestCase):
         for _ in range(10):
             self.check_property(G)
 
+    def test_modular_decomposition_16(self):
+        G = nx.empty_graph(25)
+        G.add_edges_from([
+            (0, 1),(0, 2),(0, 3),(1, 4),(1, 5),(1, 6),(2, 7),(2, 8),(2, 9),
+            (3, 10),(3, 11),(3, 12),(4, 13),(4, 14),(4, 15),(5, 16),(5, 17),(5, 18),
+            (6, 19),(6, 20),(6, 21),(7, 22),(7, 23),(7, 24),
+        ])
+
+        t = modular_decomposition(G, sorted=True, solver='linear')
+        self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5)(6)(7)(U(8)(9))(U(10)(11)(12))(U(13)(14)(15))(U(16)(17)(18))(U(19)(20)(21))(U(22)(23)(24)))')
+        self.check_property(G)
+
     def test_modular_decomposition_random(self):
         rand = Random(12345)
         min_n = 5

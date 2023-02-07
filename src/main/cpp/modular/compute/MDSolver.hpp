@@ -71,7 +71,7 @@ class MDSolver {
     auto new_root = impl::compute(graph, tree, main_prob, prof);
 
     // return result
-    TRACE("result: %s\n", tree.to_string(new_root).c_str());
+    TRACE("result: %s", tree.to_string(new_root).c_str());
     return {tree, new_root};
   }
 

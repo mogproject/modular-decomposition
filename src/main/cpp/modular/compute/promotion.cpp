@@ -55,12 +55,12 @@ static void promote_one_direction(CompTree &tree, int index, SplitDirection spli
 }
 
 void promote(CompTree &tree, int prob) {
-  TRACE("start: %s\n", tree.to_string(prob).c_str());
+  TRACE("start: %s", tree.to_string(prob).c_str());
 
   promote_one_direction(tree, prob, SplitDirection::LEFT);
   promote_one_direction(tree, prob, SplitDirection::RIGHT);
 
-  TRACE("finish: %s\n", tree.to_string(prob).c_str());
+  TRACE("finish: %s", tree.to_string(prob).c_str());
 }
 
 }  // namespace impl

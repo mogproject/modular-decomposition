@@ -6,7 +6,7 @@ namespace compute {
 namespace impl {
 
 int remove_extra_components(CompTree &tree, int prob) {
-  TRACE("start: %s\n", tree.to_string(prob).c_str());
+  TRACE("start: %s", tree.to_string(prob).c_str());
 
   auto subprob = tree[prob].first_child;
   while (tree.is_valid(subprob) && tree[subprob].data.connected) subprob = tree[subprob].right;
@@ -20,7 +20,7 @@ int remove_extra_components(CompTree &tree, int prob) {
     tree.remove(subprob);
   }
 
-  TRACE("return: %s\n", tree.to_string(ret).c_str());
+  TRACE("return: %s", tree.to_string(ret).c_str());
   return ret;
 }
 
@@ -28,21 +28,21 @@ int remove_extra_components(CompTree &tree, int prob) {
  * @brief Replaces the subproblems of this problem with their MD trees.
  */
 void remove_layers(CompTree &tree, int prob) {
-  TRACE("start: %s\n", tree.to_string(prob).c_str());
+  TRACE("start: %s", tree.to_string(prob).c_str());
 
   for (auto c : tree.get_children(prob)) {
     tree.replace_by_children(c);
     tree.remove(c);
   }
 
-  TRACE("finish: %s\n", tree.to_string(prob).c_str());
+  TRACE("finish: %s", tree.to_string(prob).c_str());
 }
 
 /**
  * @brief Makes alpha lists in this subproblem symmetric and irredundant.
  */
 void complete_alpha_lists(CompTree &tree, VI alpha_list[], ds::FastSet &vset, int prob) {
-  TRACE("start: %s\n", tree.to_string(prob).c_str());
+  TRACE("start: %s", tree.to_string(prob).c_str());
 
   // complete the list
   for (auto v : tree.get_leaves(prob)) {
@@ -67,7 +67,7 @@ void complete_alpha_lists(CompTree &tree, VI alpha_list[], ds::FastSet &vset, in
 }
 
 void merge_components(CompTree &tree, int prob, int new_components) {
-  TRACE("start: prob=%s, new=%s\n", tree.to_string(prob).c_str(), tree.to_string(new_components).c_str());
+  TRACE("start: prob=%s, new=%s", tree.to_string(prob).c_str(), tree.to_string(new_components).c_str());
 
   if (!tree.is_valid(new_components)) return;
 
@@ -87,7 +87,7 @@ void merge_components(CompTree &tree, int prob, int new_components) {
     tree.move_to(fc, new_root);
   }
 
-  TRACE("finish: %s\n", tree.to_string(problem).c_str());
+  TRACE("finish: %s", tree.to_string(prob).c_str());
 }
 
 }  // namespace impl

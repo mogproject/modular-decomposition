@@ -5,7 +5,7 @@ namespace compute {
 namespace impl {
 
 int compute(ds::graph::Graph const &graph, CompTree &tree, int main_prob, util::Profiler *prof) {
-  TRACE("start compute(): %s\n", tree.to_string(main_prob).c_str());
+  TRACE("start compute(): %s", tree.to_string(main_prob).c_str());
   PROF(util::pstart(prof, "compute()"));
 
   int n = graph.number_of_nodes();
@@ -58,7 +58,7 @@ int compute(ds::graph::Graph const &graph, CompTree &tree, int main_prob, util::
       PROF(util::pstart(prof, "remove_extra_components()"));
       auto extra_components = remove_extra_components(tree, current_prob);
       PROF(util::pstop(prof, "remove_extra_components()"));
-      TRACE("extra: %s\n", tree.to_string(extra_components).c_str());
+      TRACE("extra: %s", tree.to_string(extra_components).c_str());
 
       PROF(util::pstart(prof, "remove_layers()"));
       remove_layers(tree, current_prob);
@@ -93,7 +93,7 @@ int compute(ds::graph::Graph const &graph, CompTree &tree, int main_prob, util::
 
     result = tree[current_prob].first_child;
     current_prob = tree[current_prob].is_last_child() ? tree[current_prob].parent : tree[current_prob].right;
-    TRACE("loop: %s\n", tree.to_string(result).c_str());
+    TRACE("loop: %s", tree.to_string(result).c_str());
   }
 
   // set new root of the tree
@@ -102,7 +102,7 @@ int compute(ds::graph::Graph const &graph, CompTree &tree, int main_prob, util::
   tree.remove(result_parent);
 
   PROF(util::pstop(prof, "compute()"));
-  TRACE("return: %s\n", tree.to_string(result).c_str());
+  TRACE("return: %s", tree.to_string(result).c_str());
   return result;
 }
 }  // namespace impl

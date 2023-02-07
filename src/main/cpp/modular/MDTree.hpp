@@ -157,4 +157,8 @@ class MDTree {
   }
   std::string to_string() const { return tree_.to_string(root_); }
 };
+
+MDTree modular_decomposition(ds::graph::Graph const &graph, bool sorted = false);
+
+std::pair<MDTree, double> modular_decomposition_time(ds::graph::Graph const &graph, bool sorted = false);
 }  // namespace modular

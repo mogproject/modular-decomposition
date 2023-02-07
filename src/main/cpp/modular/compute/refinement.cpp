@@ -254,14 +254,14 @@ static void refine_with(CompTree &tree, VI const alpha_list[], VertexID refiner,
 //    Refinement
 //================================================================================
 void refine(CompTree &tree, VI const alpha_list[], int prob) {
-  TRACE("start: %s\n", tree.to_string(prob).c_str());
+  TRACE("start: %s", tree.to_string(prob).c_str());
 
   number_by_comp(tree, prob);
   number_by_tree(tree, prob);
 
   for (auto v : tree.get_leaves(prob)) refine_with(tree, alpha_list, v, tree[prob].data.vertex);
 
-  TRACE("finish: %s\n", tree.to_string(prob).c_str());
+  TRACE("finish: %s", tree.to_string(prob).c_str());
 }
 
 }  // namespace impl

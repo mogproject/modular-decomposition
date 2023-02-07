@@ -1,13 +1,17 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
+#include <list>
 #include <map>
+#include <queue>
 #include <set>
+#include <stack>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
-#include <cassert>
+#include <sstream>
 
 #define ANSI_RED "\x1b[31m"
 #define ANSI_GREEN "\x1b[32m"
@@ -86,5 +90,91 @@ typename std::enable_if<is_map<T>::value || is_set<T>::value, bool>::type contai
 template <typename T, typename U>
 typename std::enable_if<!(is_map<T>::value || is_set<T>::value), bool>::type contains(T const& col, U const& x) {
   return std::find(col.begin(), col.end(), x) != col.end();
+}
+
+//==================================================================================================
+// I/O Support
+//==================================================================================================
+// printers for STL types
+
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, std::vector<T> const& v);
+
+template <typename A, typename B>
+std::ostream& operator<<(std::ostream& stream, std::pair<A, B> const& p) {
+  return stream << "(" << p.first << ", " << p.second << ")";
+}
+template <typename A, typename B>
+std::ostream& operator<<(std::ostream& stream, std::map<A, B> const& p) {
+  stream << "{";
+  for (auto& x : p) stream << x.first << ":" << x.second << ", ";
+  return stream << "}";
+}
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, std::vector<T> const& v) {
+  stream << "[";
+  for (auto i = v.begin(); i != v.end(); ++i) stream << ((i == v.begin()) ? "" : ", ") << *i;
+  return stream << "]";
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, std::list<T> const& v) {
+  stream << "[";
+  for (auto i = v.begin(); i != v.end(); ++i) stream << ((i == v.begin()) ? "" : ", ") << *i;
+  return stream << "]";
+}
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, std::set<T> const& s) {
+  stream << "{";
+  for (auto i = s.begin(); i != s.end(); ++i) stream << ((i == s.begin()) ? "" : ", ") << *i;
+  return stream << "}";
+}
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, std::unordered_set<T> const& s) {
+  stream << "{";
+  for (auto i = s.begin(); i != s.end(); ++i) stream << ((i == s.begin()) ? "" : ", ") << *i;
+  return stream << "}";
+}
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, std::queue<T>& q) {
+  std::vector<T> v;
+  for (; !q.empty(); q.pop()) v.push_back(q.front());
+  for (auto& x : v) q.push(x);
+  return stream << v;
+}
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, std::stack<T>& s) {
+  std::vector<T> v;
+  for (; !s.empty(); s.pop()) v.push_back(s.top());
+  for (auto it = v.rbegin(); it != v.rend(); ++it) s.push(*it);
+  return stream << v;
+}
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, std::priority_queue<T>& q) {
+  std::vector<T> v;
+  for (; !q.empty(); q.pop()) v.push_back(q.top());
+  for (auto& x : v) q.push(x);
+  return stream << v;
+}
+
+template <typename ForwardIter>
+std::string to_string(ForwardIter begin, ForwardIter end) {
+  std::stringstream ss;
+  ss << "[";
+  for (auto it = begin; it != end; ++it) {
+    if (it != begin) ss << ", ";
+    ss << (*it);
+  }
+  ss << "]";
+  return ss.str();
+}
+
+template <typename T>
+std::string to_string(std::list<T> const& xs) {
+  return to_string(xs.begin(), xs.end());
+}
+template <typename T>
+std::string to_string(std::vector<T> const& xs) {
+  return to_string(xs.begin(), xs.end());
 }
 }  // namespace util
