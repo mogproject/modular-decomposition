@@ -49,11 +49,11 @@ static std::vector<bool> determine_right_layer_neighbor(CompTree const &tree, VI
       for (auto a : alpha_list[leaf]) {
         if (tree[a].data.tree_number > current_tree_num) {
           ret[i] = true;
-          goto outer_loop_exit;
+          break;
         }
       }
+      if (ret[i]) break;
     }
-  outer_loop_exit:;
   }
   return ret;
 }
@@ -259,7 +259,7 @@ static int assemble_tree(CompTree &tree, VI const &ps, int pivot_index, VII cons
 
   while (0 <= lb || rb < k) {
     auto lbound = i < sz ? boundaries[i].first : 0;
-    auto rbound = i < sz ? boundaries[i].second : static_cast<int>(ps.size()) - 1;
+    auto rbound = i < sz ? boundaries[i].second : k - 1;
     ++i;
 
     // create the spine
@@ -299,8 +299,8 @@ static void remove_degenerate_duplicates(CompTree &tree, int index) {
   for (auto it = nodes.rbegin(); it != nodes.rend(); ++it) {
     if (*it == index) break;
 
-    auto c = tree[*it];
-    auto p = tree[c.parent];
+    auto &c = tree[*it];
+    auto &p = tree[c.parent];
     if (c.data.op_type == p.data.op_type && c.data.op_type != Operation::PRIME) {
       tree.replace_by_children(*it);
       tree.remove(*it);

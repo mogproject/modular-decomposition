@@ -317,21 +317,41 @@ class TestMDTree(unittest.TestCase):
             (0, 2), (0, 5), (1, 2), (1, 3), (2, 4), (3, 5), (3, 12), (5, 13),
             (6, 10), (6, 13), (7, 8), (7, 11), (9, 13), (11, 13)
         ])
+
+        t = modular_decomposition(G, sorted=True, solver='linear')
+        self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)(12)(13))')
+        self.assertEqual(t.modular_width(), 14)
+
         self.check_property(G)
 
     def test_modular_decomposition_9(self):
         G = nx.empty_graph(9)
         G.add_edges_from([(0, 7), (1, 4), (2, 4), (2, 7), (2, 8), (4, 5)])
+
+        t = modular_decomposition(G, sorted=True, solver='linear')
+        self.assertEqual(str(t), '(U(P(0)(U(1)(5))(2)(4)(7)(8))(3)(6))')
+        self.assertEqual(t.modular_width(), 6)
+
         self.check_property(G)
 
     def test_modular_decomposition_10(self):
         G = nx.empty_graph(12)
         G.add_edges_from([(0, 8), (1, 6), (1, 7), (4, 8), (5, 7), (6, 8), (6, 9), (8, 9), (9, 11)])
+
+        t = modular_decomposition(G, sorted=True, solver='linear')
+        self.assertEqual(str(t), '(U(P(U(0)(4))(1)(5)(6)(7)(8)(9)(11))(2)(3)(10))')
+        self.assertEqual(t.modular_width(), 8)
+
         self.check_property(G)
 
     def test_modular_decomposition_11(self):
         G = nx.empty_graph(11)
         G.add_edges_from([(0, 5), (1, 3), (1, 8), (3, 8), (4, 9), (7, 8), (8, 9)])
+
+        t = modular_decomposition(G, sorted=True, solver='linear')
+        self.assertEqual(str(t), '(U(J(0)(5))(P(U(J(1)(3))(7))(4)(8)(9))(2)(6)(10))')
+        self.assertEqual(t.modular_width(), 4)
+
         self.check_property(G)
 
     def test_modular_decomposition_12(self):
@@ -340,11 +360,21 @@ class TestMDTree(unittest.TestCase):
             (0, 10), (0, 13), (1, 3), (1, 10), (2, 13), (3, 9), (3, 10), (3, 13),
             (4, 7), (5, 9), (5, 10), (9, 10), (11, 13)
         ])
+
+        t = modular_decomposition(G, sorted=True, solver='linear')
+        self.assertEqual(str(t), '(U(P(0)(1)(U(2)(11))(3)(5)(9)(10)(13))(J(4)(7))(6)(8)(12))')
+        self.assertEqual(t.modular_width(), 8)
+
         self.check_property(G)
 
     def test_modular_decomposition_13(self):
         G = nx.empty_graph(8)
         G.add_edges_from([(0, 3), (0, 7), (1, 3), (1, 6), (2, 3), (2, 4), (2, 5), (3, 4), (3, 6), (3, 7), (4, 5), (4, 6)])
+
+        t = modular_decomposition(G, sorted=True, solver='linear')
+        self.assertEqual(str(t), '(P(J(0)(7))(1)(2)(3)(4)(5)(6))')
+        self.assertEqual(t.modular_width(), 7)
+
         self.check_property(G)
 
     def test_modular_decomposition_14(self):
@@ -354,6 +384,10 @@ class TestMDTree(unittest.TestCase):
             (3, 8), (3, 10), (3, 11), (3, 12), (4, 11), (5, 10), (6, 11), (6, 12),
             (7, 12), (8, 9), (8, 12), (9, 10), (9, 12), (10, 11)
         ])
+        t = modular_decomposition(G, sorted=True, solver='linear')
+        self.assertEqual(str(t), '(P(U(0)(7))(1)(2)(3)(4)(5)(6)(8)(9)(10)(11)(12))')
+        self.assertEqual(t.modular_width(), 12)
+
         self.check_property(G)
 
     def test_modular_decomposition_15(self):
@@ -363,6 +397,11 @@ class TestMDTree(unittest.TestCase):
             (1, 11), (2, 4), (3, 5), (3, 6), (3, 9), (3, 11), (3, 13), (4, 12),
             (5, 12), (6, 13), (7, 8), (8, 12), (9, 11), (9, 13)
         ])
+
+        t = modular_decomposition(G, sorted=True, solver='linear')
+        self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)(12)(13))')
+        self.assertEqual(t.modular_width(), 14)
+
         # there used to be a non-deterministic bug
         for _ in range(10):
             self.check_property(G)

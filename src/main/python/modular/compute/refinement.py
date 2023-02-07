@@ -21,8 +21,8 @@ def refine(
     number_by_comp(prob)
     number_by_tree(prob)
 
-    # trace('comp:', {v: v.data.comp_number for v in prob.get_subnodes()})
-    # trace('tree:', {v: v.data.tree_number for v in prob.get_subnodes()})
+    # trace('comp:', {v: v.data.comp_number for v in prob.bfs_nodes()})
+    # trace('tree:', {v: v.data.tree_number for v in prob.bfs_nodes()})
 
     for v in prob.get_leaves():
         refine_with(tree, vertex_nodes, alpha_list, v.data.vertex, prob.data.vertex)

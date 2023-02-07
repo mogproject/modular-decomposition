@@ -90,60 +90,90 @@ static void mark_ancestors_by_split(CompTree &tree, int index, SplitDirection sp
  * @param leaves
  * @return std::list<NodeP>
  */
-static std::list<int> get_max_subtrees(CompTree &tree, VI const &leaves) {
-  std::list<int> discharged;
-
-  // charging process
+static std::vector<int> get_max_subtrees(CompTree &tree, VI const &leaves) {
+  // charging
+  std::map<int, int> num_charges;
   std::stack<int> stack;
-  for (auto v : leaves) stack.push(v);
+  std::unordered_set<int> fully_charged;
+  for (auto v : leaves) {
+    fully_charged.insert(v);
+    stack.push(v);
+  }
 
   while (!stack.empty()) {
     auto x = stack.top();
     stack.pop();
     if (!is_root_operator(tree, x)) {
       auto p = tree[x].parent;
-      tree[p].data.add_mark();
-      if (tree[p].data.num_marks == tree[p].number_of_children()) stack.push(p);
-    }
-    discharged.push_back(x);
-  }
+      ++num_charges[p];
 
-  // remove marks on all nodes
-  for (auto it = discharged.begin(); it != discharged.end(); ++it) {
-    tree[*it].data.clear_marks();
-    if (!is_root_operator(tree, *it)) {
-      auto p = tree[*it].parent;
-      if (tree[p].data.num_marks == tree[p].number_of_children()) {
-        it = discharged.erase(it);
-        --it;
-      } else {
-        tree[p].data.clear_marks();
+      if (tree[p].number_of_children() == num_charges[p]) {
+        // fully charged
+        fully_charged.insert(p);
+
+        // discharge children
+        for (auto c: tree.get_children(p)) fully_charged.erase(c);
+
+        stack.push(p);
       }
     }
   }
-  return discharged;
+
+  return std::vector<int>(fully_charged.begin(), fully_charged.end());
 }
 
-//================================================================================
-//    Get sibling nodes
-//================================================================================
-std::vector<std::pair<int, bool>> group_sibling_nodes(CompTree &tree, std::list<int> const &nodes) {
-  // precondition: nodes/parents do not have marks
-  for (auto node : nodes) {
-    if (tree[node].data.is_marked()) throw std::invalid_argument("found unclean marks");
-    if (tree[node].has_parent() && tree[tree[node].parent].data.is_marked()) {
-      throw std::invalid_argument("found unclean marks");
-    }
-  }
+// -----------------------original--------------------------------------------
+// static std::list<int> get_max_subtrees(CompTree &tree, VI const &leaves) {
+//   std::list<int> discharged;
 
+//   // charging process
+//   std::stack<int> stack;
+//   for (auto v : leaves) stack.push(v);
+
+//   while (!stack.empty()) {
+//     auto x = stack.top();
+//     stack.pop();
+//     if (!is_root_operator(tree, x)) {
+//       auto p = tree[x].parent;
+//       tree[p].data.add_mark();
+//       if (tree[p].data.num_marks == tree[p].number_of_children()) stack.push(p);
+//     }
+//     discharged.push_back(x);
+//   }
+
+//   // remove marks on all nodes
+//   for (auto it = discharged.begin(); it != discharged.end(); ++it) {
+//     tree[*it].data.clear_marks();
+//     if (!is_root_operator(tree, *it)) {
+//       auto p = tree[*it].parent;
+//       if (tree[p].data.num_marks == tree[p].number_of_children()) {
+//         it = discharged.erase(it);
+//         --it;
+//       } else {
+//         tree[p].data.clear_marks();
+//       }
+//     }
+//   }
+//   return discharged;
+// }
+// -----------------------original--------------------------------------------
+
+//================================================================================
+//    Group sibling nodes
+//================================================================================
+std::vector<std::pair<int, bool>> group_sibling_nodes(CompTree &tree, std::vector<int> const &nodes) {
+  std::map<int, int> num_marks;
   std::vector<int> parents;
+
   for (auto node : nodes) {
-    tree[node].data.add_mark();
+    ++num_marks[node];
+
     if (!is_root_operator(tree, node)) {
       tree.make_first_child(node);
       auto p = tree[node].parent;
-      if (!tree[p].data.is_marked()) parents.push_back(p);
-      tree[p].data.add_mark();
+
+      if (!util::contains(num_marks, p)) parents.push_back(p);
+      ++num_marks[p];
     }
   }
 
@@ -152,7 +182,7 @@ std::vector<std::pair<int, bool>> group_sibling_nodes(CompTree &tree, std::list<
   // (1) the roots of trees
   for (auto node : nodes) {
     if (is_root_operator(tree, node)) {
-      tree[node].data.clear_marks();
+      num_marks.erase(node);
       sibling_groups.push_back({node, false});
     }
   }
@@ -161,21 +191,18 @@ std::vector<std::pair<int, bool>> group_sibling_nodes(CompTree &tree, std::list<
     // there must be at least one mark
     auto c = tree[p].first_child;
 
-    if (tree[p].data.num_marks == 1) {
+    if (num_marks[p] == 1) {
       // (2) the non-root nodes without siblings
-      tree[p].data.clear_marks();
-      tree[c].data.clear_marks();
       sibling_groups.push_back({c, false});
     } else {
       // (3) group sibling nodes as children of a new node inserted in their place.
-      int nm = tree[p].data.num_marks;
-      tree[p].data.clear_marks();
       auto grouped_children = tree.create_node(tree[p].data);
 
       auto c = tree[p].first_child;
-      for (int i = 1; i < nm; ++i) {
+      for (int i = 0; i < num_marks[p]; ++i) {
+        auto nxt = tree[c].right;
         tree.move_to(c, grouped_children);
-        c = tree[c].right;
+        c = nxt;
       }
       tree.move_to(grouped_children, p);
 
@@ -188,6 +215,70 @@ std::vector<std::pair<int, bool>> group_sibling_nodes(CompTree &tree, std::list<
   return sibling_groups;
 }
 
+// -----------------------original--------------------------------------------
+// std::vector<std::pair<int, bool>> group_sibling_nodes(CompTree &tree, std::list<int> const &nodes) {
+//   // precondition: nodes/parents do not have marks
+//   for (auto node : nodes) {
+//     if (tree[node].data.is_marked()) throw std::invalid_argument("found unclean marks");
+//     if (tree[node].has_parent() && tree[tree[node].parent].data.is_marked()) {
+//       throw std::invalid_argument("found unclean marks");
+//     }
+//   }
+
+//   std::vector<int> parents;
+//   for (auto node : nodes) {
+//     tree[node].data.add_mark();
+//     if (!is_root_operator(tree, node)) {
+//       tree.make_first_child(node);
+//       auto p = tree[node].parent;
+//       if (!tree[p].data.is_marked()) parents.push_back(p);
+//       tree[p].data.add_mark();
+//     }
+//   }
+
+//   std::vector<std::pair<int, bool>> sibling_groups;
+
+//   // (1) the roots of trees
+//   for (auto node : nodes) {
+//     if (is_root_operator(tree, node)) {
+//       tree[node].data.clear_marks();
+//       sibling_groups.push_back({node, false});
+//     }
+//   }
+
+//   for (auto p : parents) {
+//     // there must be at least one mark
+//     auto c = tree[p].first_child;
+
+//     if (tree[p].data.num_marks == 1) {
+//       // (2) the non-root nodes without siblings
+//       tree[p].data.clear_marks();
+//       tree[c].data.clear_marks();
+//       sibling_groups.push_back({c, false});
+//     } else {
+//       // (3) group sibling nodes as children of a new node inserted in their place.
+//       int nm = tree[p].data.num_marks;
+//       tree[p].data.clear_marks();
+//       auto grouped_children = tree.create_node(tree[p].data);
+
+//       auto c = tree[p].first_child;
+//       for (int i = 1; i < nm; ++i) {
+//         auto nxt = tree[c].right;
+//         tree.move_to(c, grouped_children);
+//         c = nxt;
+//       }
+//       tree.move_to(grouped_children, p);
+
+//       sibling_groups.push_back({grouped_children, tree[grouped_children].data.op_type == Operation::PRIME});
+//     }
+//   }
+
+//   // TRACE("return: %s\n", cstr(sibling_groups));
+//   // util::pstop(prof, "group_sibling_nodes()");
+//   return sibling_groups;
+// }
+// -----------------------original--------------------------------------------
+
 //================================================================================
 //    Subroutine
 //================================================================================
@@ -199,6 +290,7 @@ static SplitDirection get_split_type(CompTree &tree, int index, VertexID refiner
 }
 
 static void refine_one_node(CompTree &tree, int index, SplitDirection split_type, bool new_prime) {
+  TRACE("refining tree=%s, index=%d, split_type=%d, new_prime=%d", tree.to_string(index).c_str(), index, split_type, new_prime);
   if (is_root_operator(tree, index)) return;
 
   auto p = tree[index].parent;
@@ -242,7 +334,7 @@ static void refine_with(CompTree &tree, VI const alpha_list[], VertexID refiner,
 
   TRACE("alpha[%d]: %s", refiner, util::to_string(alpha_list[refiner]).c_str());
   TRACE("subtree_roots: %s", util::to_string(subtree_roots).c_str());
-  TRACE("sibling_groups: %s", util::to_string(sibling_groups).c_str());
+  TRACE("sibling_groups: %s, tree=%s", util::to_string(sibling_groups).c_str(), tree.to_string(tree[pivot].parent).c_str());
 
   for (auto &x : sibling_groups) {
     auto split_type = get_split_type(tree, x.first, refiner, pivot);
@@ -259,7 +351,10 @@ void refine(CompTree &tree, VI const alpha_list[], int prob) {
   number_by_comp(tree, prob);
   number_by_tree(tree, prob);
 
-  for (auto v : tree.get_leaves(prob)) refine_with(tree, alpha_list, v, tree[prob].data.vertex);
+  for (auto v : tree.get_leaves(prob)) {
+    refine_with(tree, alpha_list, v, tree[prob].data.vertex);
+    TRACE("refined at %d: tree=%s", v, tree.to_string(prob).c_str())
+  }
 
   TRACE("finish: %s", tree.to_string(prob).c_str());
 }
