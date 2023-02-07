@@ -11,6 +11,7 @@ import logging
 import networkx as nx
 from random import Random
 import time
+import subprocess
 
 __version__ = '0.0.1'
 __license__ = 'Apache License, Version 2.0'
@@ -72,19 +73,41 @@ def generate_mw_bounded_graph(n: int, max_mw: int, rand: Random) -> nx.Graph:
     return G
 
 
+def bench_cpp(G: nx.Graph) -> tuple[int, float, str]:
+    elist = '\n'.join(f'{u} {v}' for u, v in G.edges())
+    proc = subprocess.Popen('build/Release/modular-bench', stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    out = proc.communicate(input=elist.encode('utf-8'))[0].decode('utf-8')
+    lines = out.splitlines()
+    return int(lines[0]), float(lines[1]), lines[2].strip()
+
 def bench_one_instance(G: nx.Graph, num_iterations: int = 3):
     n = G.number_of_nodes()
     m = G.number_of_edges()
 
+    expected_answer = None
+
     for _ in range(num_iterations):
-        for solver in ['naive', 'linear']:
-            time_start = time.time()
-            t = modular_decomposition(G, solver=solver)
-            time_end = time.time()
-            elapsed = time_end - time_start
-            mw = t.modular_width()
+        for solver in ['naive', 'linear', 'cpp']:
+            if solver == 'cpp':
+                mw, elapsed, ans = bench_cpp(G)
+            else:
+                time_start = time.time()
+                t = modular_decomposition(G, solver=solver)
+                time_end = time.time()
+                elapsed = time_end - time_start
+                mw = t.modular_width()
+                t.sort()
+                ans = str(t)
+
+            if expected_answer is None:
+                t.sort()
+                expected_answer = ans
+            else:
+                t.sort()
+                assert expected_answer == ans, 'Wrong Answer'
+
             print(f'{n},{m},{solver},{mw},{elapsed}')
-        break
+
 
 
 def main(args):
