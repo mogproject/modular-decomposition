@@ -56,6 +56,8 @@ class MDTree:
             for _, c in sorted(((min_label[c], c) for c in node.get_children()), reverse=True):
                 idx -= c.data.size()
                 new_begin[c] = idx
+                c.data.vertices_end = idx + c.data.size()
+                c.data.vertices_begin = idx
                 self.tree.make_first_child(c)
 
     def modular_width(self) -> int:

@@ -317,8 +317,9 @@ def assemble_tree(
 # ===============================================================================
 def remove_degenerate_duplicates(tree: RootedForest[MDComputeNode], node: Node[MDComputeNode]):
     for c in reversed(list(node.bfs_nodes())):
-        if c == node or c.parent is None:
+        if c == node:
             break
+        assert c.parent is not None
         if c.data.op_type == c.parent.data.op_type and c.data.op_type != OperationType.PRIME:
             tree.replace_by_children(c)
             tree.remove(c)
