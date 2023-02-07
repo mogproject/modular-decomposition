@@ -19,7 +19,7 @@ class MDComputeNode {
   VertexID vertex;  // pivot for problem node
   int comp_number;
   int tree_number;
-  int num_marks;
+  // int num_marks;
   bool active;
   bool connected;
 
@@ -30,7 +30,7 @@ class MDComputeNode {
         vertex(-1),
         comp_number(-1),
         tree_number(-1),
-        num_marks(0),
+        // num_marks(0),
         active(false),
         connected(false) {}
 
@@ -41,7 +41,7 @@ class MDComputeNode {
         vertex(node.vertex),
         comp_number(node.comp_number),
         tree_number(node.tree_number),
-        num_marks(0),
+        // num_marks(0),
         active(node.active),
         connected(node.connected) {}
 
@@ -67,9 +67,9 @@ class MDComputeNode {
   bool is_operation_node() const { return node_type == NodeType::OPERATION; }
   bool is_problem_node() const { return node_type == NodeType::PROBLEM; }
 
-  bool is_marked() { return num_marks > 0; }
-  void add_mark() { ++num_marks; }
-  void clear_marks() { num_marks = 0; }
+  // bool is_marked() { return num_marks > 0; }
+  // void add_mark() { ++num_marks; }
+  // void clear_marks() { num_marks = 0; }
 
   bool is_split_marked(SplitDirection split_type) {
     return this->split_type == SplitDirection::MIXED || this->split_type == split_type;
@@ -87,7 +87,7 @@ class MDComputeNode {
   void clear() {
     comp_number = -1;
     tree_number = -1;
-    num_marks = 0;
+    // num_marks = 0;
     split_type = SplitDirection::NONE;
   }
 
