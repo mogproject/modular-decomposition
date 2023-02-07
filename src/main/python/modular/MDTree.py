@@ -16,7 +16,7 @@ class MDTree:
     Modular decomposition tree for undirected graphs.
     """
 
-    def __init__(self, G: nx.Graph, solver: str = 'naive') -> None:
+    def __init__(self, G: nx.Graph, solver: str = 'linear') -> None:
         assert len(G) > 0, 'graph cannot be empty'
 
         if solver == 'linear':
@@ -73,7 +73,7 @@ class MDTree:
         return repr(self.root)
 
 
-def modular_decomposition(G: nx.Graph, sorted: bool = False, solver: str = 'naive') -> Optional[MDTree]:
+def modular_decomposition(G: nx.Graph, sorted: bool = False, solver: str = 'linear') -> Optional[MDTree]:
     """Alias to the constructor."""
 
     if len(G) == 0:
