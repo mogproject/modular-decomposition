@@ -377,6 +377,7 @@ class TestMDTree(unittest.TestCase):
 
         t = modular_decomposition(G, sorted=True, solver='linear')
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5)(6)(7)(U(8)(9))(U(10)(11)(12))(U(13)(14)(15))(U(16)(17)(18))(U(19)(20)(21))(U(22)(23)(24)))')
+        self.assertEqual(t.modular_width(), 14)
         self.check_property(G)
 
     def test_modular_decomposition_random(self):

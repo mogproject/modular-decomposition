@@ -115,16 +115,14 @@ def get_max_subtrees(leaves: list[Node[MDComputeNode]]) -> list[Node[MDComputeNo
             if p.number_of_children() == num_charges[p]:
                 # fully charged
                 fully_charged.add(p)
+
+                # discharge children
+                for c in p.get_children():
+                    fully_charged.remove(c)
+
                 st += [p]
 
-    # discharging
-    to_discharge = set()
-    for x in fully_charged:
-        if x.parent in fully_charged:
-            # parent is fully charged
-            to_discharge.add(x)
-
-    return list(fully_charged - to_discharge)
+    return list(fully_charged)
 
 
 # ===============================================================================
