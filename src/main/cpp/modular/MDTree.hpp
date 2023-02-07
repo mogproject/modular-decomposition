@@ -10,8 +10,8 @@ class MDNode {
  public:
   Operation op;
   VertexID vertex;
-  VertexID vertices_begin;  // starting index of the vertices (leaves)
-  VertexID vertices_end;    // ending index + 1 of the vertices (leaves)
+  int vertices_begin;  // starting index of the vertices (leaves)
+  int vertices_end;    // ending index + 1 of the vertices (leaves)
 
   MDNode(VertexID vertex = -1, Operation op = Operation::PRIME, VertexID vertices_begin = -1, VertexID vertices_end = -1)
       : op(op), vertex(vertex), vertices_begin(vertices_begin), vertices_end(vertices_end) {}
@@ -24,7 +24,8 @@ class MDNode {
     vertices_end = node.vertices_end;
   }
 
-  bool is_vertex_node() const { return vertices_begin + 1 == vertices_end; }
+  int size() const { return vertices_end - vertices_begin; }
+  bool is_vertex_node() const { return vertex >= 0; }
   bool is_operation_node() const { return !is_vertex_node(); }
   bool is_prime_node() const { return is_operation_node() && op == Operation::PRIME; }
   bool is_join_node() const { return is_operation_node() && op == Operation::SERIES; }
@@ -45,10 +46,13 @@ class MDTree {
   std::vector<VertexID> vertices_;
 
  public:
-  MDTree(): root_(-1) {};
-  MDTree(ds::graph::Graph const &graph) {
+  MDTree() : root_(-1){};
+  MDTree(ds::graph::Graph const &graph, bool sorted = false) {
     auto result = compute::MDSolver::compute(graph);
-    if (result.second >= 0) *this = MDTree(result.first, result.second);
+    if (result.second >= 0) {
+      *this = MDTree(result.first, result.second);
+      if (sorted) this->sort();
+    }
   }
 
   MDTree(compute::CompTree const &comp_tree, int comp_root) {
@@ -99,6 +103,48 @@ class MDTree {
       if (tree_[c].data.is_prime_node()) ret = std::max(ret, tree_[c].number_of_children());
     }
     return ret;
+  }
+
+  /**
+   * @brief Sorts all nodes in lexicographical order.
+   */
+  void sort() {
+    auto level_order = tree_.bfs_nodes(root_);
+
+    // first pass (bottom-up): find the (lexicographically) smallest vertex for each module
+    std::map<int, VertexID> min_label;
+    for (auto it = level_order.rbegin(); it != level_order.rend(); ++it) {
+      if (tree_[*it].is_leaf()) min_label[*it] = tree_[*it].data.vertex;
+      if (!tree_[*it].is_root()) {
+        auto p = tree_[*it].parent;
+        auto nd = min_label[*it];
+        min_label[p] = util::contains(min_label, p) ? std::min(min_label[p], nd) : nd;
+      }
+    }
+
+    // second pass (top-down): reorder nodes and vertices
+    std::map<int, int> new_begin;
+    new_begin[root_] = 0;
+    for (auto x : level_order) {
+      if (tree_[x].is_leaf()) {
+        vertices_[new_begin[x]] = tree_[x].data.vertex;  // stores the node id
+        continue;
+      }
+
+      std::vector<std::pair<int, int>> cs;
+      for (auto c : tree_.get_children(x)) cs.push_back({min_label[c], c});
+      std::sort(cs.begin(), cs.end());
+
+      auto idx = new_begin[x] + tree_[x].data.size();
+      for (int i = static_cast<int>(cs.size()) - 1; i >= 0; --i) {
+        auto c = cs[i].second;
+        idx -= tree_[c].data.size();
+        new_begin[c] = idx;
+        tree_[c].data.vertices_end = idx + tree_[c].data.size();
+        tree_[c].data.vertices_begin = idx;
+        tree_.make_first_child(c);
+      }
+    }
   }
 
   ds::tree::IntRootedForest<MDNode> const &get_tree() const { return tree_; }
