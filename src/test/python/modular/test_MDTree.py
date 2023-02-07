@@ -404,9 +404,20 @@ class TestMDTree(unittest.TestCase):
 
         for _ in range(10):
             G = self.generate_mw_bounded_graph(500, 4, 0.5, rand)
-        
+
             sys.setrecursionlimit(70)
             t = modular_decomposition(G, solver='linear')
             sys.setrecursionlimit(rec_lim)
 
             self.assertLessEqual(t.modular_width(), 4)
+
+    def test_modular_decomposition_internal(self):
+        G = nx.empty_graph(7)
+        G.add_edges_from([(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (1, 2), (2, 3), (3, 4), (5, 6)])
+        t = modular_decomposition(G, sorted=True)
+        self.assertEqual(str(t), '(J(0)(U(P(1)(2)(3)(4))(J(5)(6))))')
+
+        self.assertEqual(
+            [(nd.data.vertices_begin, nd.data.vertices_end) for nd in t.root.dfs_preorder_nodes()],
+            [(0, 7), (0, 1), (1, 7), (1, 5), (1, 2), (2, 3), (3, 4), (4, 5), (5, 7), (5, 6), (6, 7)]
+        )
