@@ -302,6 +302,14 @@ class IntRootedForest {
   }
 
  public:
+  std::vector<int> get_roots() const {
+    std::vector<int> ret;
+    for (int i = 0; i < static_cast<int>(nodes_.size()); ++i) {
+      if (nodes_[i].alive && nodes_[i].is_root()) ret.push_back(i);
+    }
+    return ret;
+  }
+
   void remove(int index) {
     if (!is_valid(index)) throw std::invalid_argument("remove: invalid index");
     detach(index);

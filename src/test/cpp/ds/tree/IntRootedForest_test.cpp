@@ -48,6 +48,7 @@ TEST(IntRootedForestTest, IntRootedForest) {
 
   EXPECT_EQ(tree.size(), 20);
   EXPECT_EQ(tree.capacity(), 20);
+  EXPECT_EQ(tree.get_roots(), VI({0, 3, 10, 13}));
 
   // Node#is_root()
   EXPECT_EQ(collect<bool>([&](int i) { return tree[i].is_root(); }),
@@ -139,6 +140,8 @@ TEST(IntRootedTreeTest, Detach) {
 
   EXPECT_EQ(tree.size(), 20);
   EXPECT_EQ(tree.capacity(), 20);
+  EXPECT_EQ(tree.get_roots(), VI({0, 1, 3, 4, 5, 10, 13}));
+
   tree.check_consistency();
 }
 
@@ -180,6 +183,10 @@ TEST(IntRootedTreeTest, Remove) {
   EXPECT_EQ(tree.to_string(3), "(3(99(98(96)))(4(7(8)(6)))(1))");
   EXPECT_EQ(tree.size(), 20);
   EXPECT_EQ(tree.capacity(), 21);
+
+  EXPECT_EQ(tree.get_roots(), VI({0, 3, 10, 13}));
+  tree.remove(0);
+  EXPECT_EQ(tree.get_roots(), VI({3, 10, 13}));
 
   tree.check_consistency();
 }
