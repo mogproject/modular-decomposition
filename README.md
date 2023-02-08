@@ -9,8 +9,8 @@ The code implements the algorithm described in *Simpler, Linear-Time Modular Dec
 ## Dependencies
 
 - C++
-  - gcc version 11 or 12
-  - CMake
+  - gcc version 11 or 12 (Mac: `brew install gcc@12`)
+  - CMake (Mac: `brew install cmake`)
 - Python
   - NetworkX (`pip install networkx`)
   - NumPy (`pip install numpy`)
@@ -19,6 +19,7 @@ The code implements the algorithm described in *Simpler, Linear-Time Modular Dec
 
 - C++
   - GoogleTest (automatically installed during the build process)
+  - lcov (Mac: `brew install lcov`)
 - Python
   - pytest (`pip install pytest`)
   - pytest-cov (`pip install pytest-cov`)

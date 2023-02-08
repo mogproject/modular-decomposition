@@ -21,8 +21,10 @@ jobs:
               run: pip install numpy
             - name: Install testing dependencies
               run: pip install pytest pytest-cov mypy coveralls
-            - name: Run unit tests
-              run: make test
+            - name: Install lcov
+              run: sudo apt-get install -y lcov
+            - name: Run unit tests with coverage
+              run: make coverage
             - name: Coveralls
               uses: coverallsapp/github-action@master
               with:

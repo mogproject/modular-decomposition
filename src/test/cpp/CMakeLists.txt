@@ -19,6 +19,19 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 enable_testing()
 
+# Code coverage
+function(add_code_coverage)
+  if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang" OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
+    add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
+    add_link_options(-fprofile-instr-generate -fcoverage-mapping)
+  elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    add_compile_options(-fprofile-arcs -ftest-coverage)
+    link_libraries(gcov)
+  endif()
+endfunction()
+
+add_code_coverage()
+
 # source files
 file(GLOB_RECURSE TEST_SRC
   LIST_DIRECTORIES false

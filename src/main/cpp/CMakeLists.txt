@@ -12,15 +12,6 @@ option(BUILD_TESTS "Build test programs" OFF)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# specify compilers on local machine (Mac)
-if (EXISTS /opt/homebrew/bin/g++-12)
-  set(CMAKE_C_COMPILER /opt/homebrew/bin/gcc-12)
-  set(CMAKE_CXX_COMPILER /opt/homebrew/bin/g++-12)
-elseif(EXISTS /opt/homebrew/bin/gcc-11)
-  set(CMAKE_C_COMPILER /opt/homebrew/bin/gcc-11)
-  set(CMAKE_CXX_COMPILER /opt/homebrew/bin/g++-11)
-endif ()
-
 message("Compiler: ${CMAKE_CXX_COMPILER}")
 
 # source files
