@@ -75,54 +75,77 @@ def is_root_operator(node: Node[MDComputeNode]) -> bool:
 # ===============================================================================
 def mark_ancestors_by_split(node: Node[MDComputeNode], split_type: SplitDirection) -> None:
     """Adds the given mark to all of the node's ancestors."""
-    for p in node.get_ancestors():
+    p = node.parent
+    while p is not None:
         if p.data.is_problem_node():
             break  # passed the operation root
+        if p.data.is_split_marked(split_type):
+            add_split_mark(p, split_type, should_recurse=True)
+            break
         add_split_mark(p, split_type, should_recurse=True)
+        p = p.parent
 
 
 def add_split_mark(node: Node[MDComputeNode], split_type: SplitDirection, should_recurse: bool) -> None:
     """Add the given mark to the node and possibly its children."""
-    node.data.set_split_mark(split_type)
+    if not node.data.is_split_marked(split_type):
+        if node.parent is not None and node.parent.data.is_operation_node():
+            node.parent.data.increment_num_split_children(split_type)
+        node.data.set_split_mark(split_type)
 
-    if should_recurse and node.data.op_type == OperationType.PRIME:
-        for c in node.get_children():
-            if not c.data.is_split_marked(split_type):
-                c.data.set_split_mark(split_type)
+    if not should_recurse or node.data.op_type != OperationType.PRIME:
+        return
+
+    if node.number_of_children() == node.data.get_num_split_children(split_type):
+        return  # split type is already set to all children
+
+    for c in node.get_children():
+        if not c.data.is_split_marked(split_type):
+            node.data.increment_num_split_children(split_type)
+            c.data.set_split_mark(split_type)
 
 
 # ===============================================================================
 #    Get max subtrees
 # ===============================================================================
+def is_parent_fully_charged(x: Node[MDComputeNode]) -> bool:
+    if is_root_operator(x):
+        return False
+    p = x.parent
+    assert p is not None
+    return p.number_of_children() == p.data.num_marks
+
+
 def get_max_subtrees(leaves: list[Node[MDComputeNode]]) -> list[Node[MDComputeNode]]:
     """
     Finds the set of maximal subtrees such that the leaves of each subtree are
     subsets of the given leaf set.
     """
-
-    num_charges: dict[Node[MDComputeNode], int] = defaultdict(int)
+    full_charged = list(leaves)
+    charged: list[Node[MDComputeNode]] = []
 
     # charging
-    fully_charged: set[Node[MDComputeNode]] = set(leaves)
-    st = [x for x in leaves]
-
-    while st:
-        x = st.pop()
+    idx = 0
+    while idx < len(full_charged):
+        x = full_charged[idx]
         if not is_root_operator(x):
-            p = x.parent
-            assert p is not None
-            num_charges[p] += 1
-            if p.number_of_children() == num_charges[p]:
+            p = x.get_parent()
+            if p.data.num_marks == 0:
+                charged += [p]
+            p.data.add_mark()
+
+            if p.number_of_children() == p.data.num_marks:
                 # fully charged
-                fully_charged.add(p)
+                full_charged += [p]
+        idx += 1
 
-                # discharge children
-                for c in p.get_children():
-                    fully_charged.remove(c)
+    # discharging
+    ret: list[Node[MDComputeNode]] = [x for x in full_charged if not is_parent_fully_charged(x)]
 
-                st += [p]
-
-    return list(fully_charged)
+    # cleaning
+    for x in charged:
+        x.data.clear_marks()
+    return ret
 
 
 # ===============================================================================
@@ -132,47 +155,55 @@ def group_sibling_nodes(
     tree: RootedForest[MDComputeNode],
     nodes: list[Node[MDComputeNode]]
 ) -> list[tuple[Node[MDComputeNode], bool]]:
-    num_marks: dict[Node[MDComputeNode], int] = defaultdict(int)
+    """
+    Precondition: `nodes` must be maximal subtrees (no node is an ancestor of another).
+    """
     parents: list[Node[MDComputeNode]] = []
+    sibling_groups: list[tuple[Node[MDComputeNode], bool]] = []
 
     for node in nodes:
-        num_marks[node] += 1
-
-        if not is_root_operator(node):
+        if is_root_operator(node):
+            # (1) roots of trees
+            sibling_groups += [(node, False)]
+        else:
             tree.make_first_child(node)
             p = node.parent
             assert p is not None
 
-            if p not in num_marks:
+            if p.data.num_marks == 0:
                 parents += [p]
-            num_marks[p] += 1
-
-    sibling_groups: list[tuple[Node[MDComputeNode], bool]] = []
-
-    # (1) roots of trees
-    for node in nodes:
-        if is_root_operator(node):
-            del num_marks[node]
-            sibling_groups += [(node, False)]
+            p.data.add_mark()
 
     for p in parents:
         # there must be at least one mark
         c = p.first_child
         assert c is not None
 
-        if num_marks[p] == 1:
+        if p.data.num_marks == 1:
             # (2) non-root nodes without siblings
             sibling_groups += [(c, False)]
         else:
             # (3) group sibling nodes as the children of a newly inserted node
             grouped_children = tree.create_node(p.data.copy())
 
+            for split_type in [SplitDirection.LEFT, SplitDirection.RIGHT]:
+                if grouped_children.data.is_split_marked(split_type):
+                    p.data.increment_num_split_children(split_type)
+
             # FIX FROM ORIGINAL CODE (RecSubProblem.java line 971); bug when a child of `p` is also in `parents`
-            for c in p.get_children()[:num_marks[p]]:
+            for c in p.get_children()[:p.data.num_marks]:
+                for split_type in [SplitDirection.LEFT, SplitDirection.RIGHT]:
+                    if c.data.is_split_marked(split_type):
+                        p.data.decrement_num_split_children(split_type)
+                        grouped_children.data.increment_num_split_children(split_type)
+
                 tree.move_to(c, grouped_children)
             tree.move_to(grouped_children, p)
 
             sibling_groups += [(grouped_children, grouped_children.data.op_type == OperationType.PRIME)]
+
+        # clean marks
+        p.data.clear_marks()
 
     return sibling_groups
 
@@ -212,6 +243,10 @@ def refine_one_node(
             tree.move_to_before(node, p)
         else:
             tree.move_to_after(node, p)
+        for st in [SplitDirection.LEFT, SplitDirection.RIGHT]:
+            if node.data.is_split_marked(st):
+                p.data.decrement_num_split_children(st)
+
         new_sibling = p
 
         if p.has_only_one_child():
@@ -231,6 +266,13 @@ def refine_one_node(
         tree.move_to(node, replacement)
         tree.move_to(p, replacement)
         new_sibling = p
+
+        for st in [SplitDirection.LEFT, SplitDirection.RIGHT]:
+            if node.data.is_split_marked(st):
+                p.data.decrement_num_split_children(st)
+                replacement.data.increment_num_split_children(st)
+            if p.data.is_split_marked(st):
+                replacement.data.increment_num_split_children(st)
 
     add_split_mark(node, split_type, should_recurse=new_prime)
     mark_ancestors_by_split(node, split_type)
@@ -257,3 +299,17 @@ def refine_with(
         # trace(f'before: refiner={refiner}, node={current}, tree={tree}')
         refine_one_node(tree, current, split_type, new_prime)
         # trace(f'after : refiner={refiner}, node={current}, tree={tree}')
+
+        # sanity check
+        # for r in tree.roots:
+        #     for node in r.dfs_reverse_preorder_nodes():
+        #         if not node.data.is_operation_node():
+        #             assert node.data.num_left_split_children == 0
+        #             assert node.data.num_right_split_children == 0
+        #         else:
+        #             lact = node.data.num_left_split_children
+        #             ract = node.data.num_right_split_children
+        #             lexp = sum(1 if c.data.is_split_marked(SplitDirection.LEFT) else 0 for c in node.get_children())
+        #             rexp = sum(1 if c.data.is_split_marked(SplitDirection.RIGHT) else 0 for c in node.get_children())
+        #             assert lact == lexp, f'node={node}, expect={lexp}, actual={lact}'
+        #             assert ract == rexp, f'node={node}, expect={rexp}, actual={lact}'

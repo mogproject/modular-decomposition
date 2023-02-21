@@ -7,7 +7,7 @@ def parse_bool(s: str): return [c != '0' for c in s]
 
 
 def create_forest():
-    tree = RootedForest()  # type: RootedForest[int]
+    tree = RootedForest(verify=True)  # type: RootedForest[int]
     nodes = [tree.create_node(i) for i in range(20)]
 
     #  0    3       10   13

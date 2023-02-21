@@ -30,7 +30,7 @@ def assemble(
     lcocomp = determine_left_cocomp_fragments(ps, pivot_index)
     rcomp = determine_right_comp_fragments(ps, pivot_index)
     rlayer = determine_right_layer_neighbor(vertex_nodes, alpha_list, ps, pivot_index)
-    neighbors = compute_fact_perm_edges(vertex_nodes, alpha_list, ps)
+    neighbors = compute_fact_perm_edges(vertex_nodes, alpha_list, ps, pivot_index)
     mu = compute_mu(ps, pivot_index, neighbors)
     boundaries = delineate(pivot_index, lcocomp, rcomp, rlayer, mu)
     # print(f'[TRACE] boundaries={boundaries}')
@@ -97,7 +97,8 @@ def determine_right_layer_neighbor(
 def compute_fact_perm_edges(
     vertex_nodes: dict[VertexId, Node[MDComputeNode]],
     alpha_list: dict[VertexId, set[VertexId]],
-    ps: list[Node[MDComputeNode]]
+    ps: list[Node[MDComputeNode]],
+    pivot_index: int
 ) -> list[list[int]]:
     k = len(ps)
     neighbors: list[list[int]] = [[] for _ in range(k)]
@@ -110,14 +111,15 @@ def compute_fact_perm_edges(
             elem_size[i] += 1  # increment the element size
 
     # find joins
-    for i, p in enumerate(ps):
-        candidates = []
-        marks = [0] * k
+    marks = [0] * k
+    for i in range(pivot_index):  # we need the neighbors only up to pivot_index
+        p = ps[i]
+        candidates = set()
 
         for leaf in p.get_leaves():
             for a in alpha_list[leaf.data.vertex]:
                 j = vertex_nodes[a].data.comp_number
-                candidates += [j]
+                candidates.add(j)
                 marks[j] += 1
 
         for j in candidates:
@@ -125,7 +127,8 @@ def compute_fact_perm_edges(
                 # found a join between i and j
                 neighbors[i] += [j]
                 marks[j] = 0  # reset marks so that there will be no duplicates
-
+            else:
+                assert False, 'never happens?'
     return neighbors
 
 

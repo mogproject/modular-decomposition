@@ -30,9 +30,11 @@ int remove_extra_components(CompTree &tree, int prob) {
 void remove_layers(CompTree &tree, int prob) {
   TRACE("start: %s", tree.to_string(prob).c_str());
 
-  for (auto c : tree.get_children(prob)) {
-    tree.replace_by_children(c);
+  for (auto c = tree[prob].first_child; tree.is_valid(c);) {
+    auto nxt = tree[c].right;
+    tree.replace(c, tree[c].first_child);  // should have only one child
     tree.remove(c);
+    c = nxt;
   }
 
   TRACE("finish: %s", tree.to_string(prob).c_str());
@@ -41,28 +43,35 @@ void remove_layers(CompTree &tree, int prob) {
 /**
  * @brief Makes alpha lists in this subproblem symmetric and irredundant.
  */
-void complete_alpha_lists(CompTree &tree, VI alpha_list[], ds::FastSet &vset, int prob) {
+void complete_alpha_lists(CompTree &tree, VVV &alpha_list, ds::FastSet &vset, int prob, std::vector<int> &leaves) {
   TRACE("start: %s", tree.to_string(prob).c_str());
 
   // complete the list
-  for (auto v : tree.get_leaves(prob)) {
+  for (auto v : leaves) {
     assert(v >= 0);
-    for (int a : alpha_list[v]) {
+    for (auto a : alpha_list[v]) {
       assert(a >= 0);
       alpha_list[a].push_back(v);
     }
   }
-  // remove duplicate entries
-  for (auto v : tree.get_leaves(prob)) {
+
+  // remove duplicate entries (in-place)
+  for (auto v : leaves) {
+    auto &vs = alpha_list[v];
     vset.clear();
-    std::vector<int> result;
-    for (auto a : alpha_list[v]) {
-      if (!vset.get(a)) {
-        result.push_back(a);
+
+    std::size_t len = vs.size();
+    for (std::size_t i = 0; i < len;) {
+      auto a = vs[i];
+      if (vset.get(a)) {
+        // found a duplicate; swap with the last element
+        vs[i] = vs[--len];
+        vs.pop_back();
+      } else {
         vset.set(a);
+        ++i;
       }
     }
-    alpha_list[v] = result;
   }
 }
 

@@ -12,6 +12,13 @@
 //================================================================================
 //    Macros
 //================================================================================
+
+// validation: on
+// #define VALIDATE(s) s
+
+// validation: off
+#define VALIDATE(s)
+
 #define FOR_EACH_CHILD(c, p) for (auto c = nodes_[(p)].first_child; (c) != NOT_AVAILABLE; (c) = nodes_[(c)].right)
 
 namespace ds {
@@ -109,19 +116,19 @@ class IntRootedForest {
   //================================================================================
   // array subscript operator for writing
   Node& operator[](std::size_t index) {
-    if (!is_valid(index)) throw std::invalid_argument("invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("invalid index"));
     return nodes_[index];
   }
 
   // array subscript operator for reading
   Node const& operator[](std::size_t index) const {
-    if (!is_valid(index)) throw std::invalid_argument("invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("invalid index"));
     return nodes_[index];
   }
 
   // get nodes in the one-level lower
   std::vector<int> get_children(int index) const {
-    if (!is_valid(index)) throw std::invalid_argument("get_children: invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("get_children: invalid index"));
 
     std::vector<int> ret;
     FOR_EACH_CHILD(c, index) ret.push_back(c);
@@ -141,7 +148,7 @@ class IntRootedForest {
    *         leaving:  traverse from node to parent
    */
   std::vector<std::pair<int, int>> dfs_preorder_edges(int index) const {
-    if (!is_valid(index)) throw std::invalid_argument("dfs_preorder_edges: invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("dfs_preorder_edges: invalid index"));
 
     std::vector<std::pair<int, int>> ret, stack;
     stack.push_back({index, false});
@@ -162,7 +169,7 @@ class IntRootedForest {
   }
 
   std::vector<std::pair<int, int>> dfs_reverse_preorder_edges(int index) const {
-    if (!is_valid(index)) throw std::invalid_argument("dfs_preorder_edges: invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("dfs_preorder_edges: invalid index"));
 
     std::vector<std::pair<int, int>> ret, stack;
     stack.push_back({index, false});
@@ -183,7 +190,7 @@ class IntRootedForest {
   }
 
   std::vector<int> bfs_nodes(int index) const {
-    if (!is_valid(index)) throw std::invalid_argument("bfs_nodes: invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("bfs_nodes: invalid index"));
 
     std::vector<int> ret;
     std::queue<int> q;
@@ -199,7 +206,7 @@ class IntRootedForest {
   }
 
   std::vector<int> dfs_preorder_nodes(int index) const {
-    if (!is_valid(index)) throw std::invalid_argument("dfs_preorder_nodes: invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("dfs_preorder_nodes: invalid index"));
 
     std::vector<int> ret, stack;
     stack.push_back(index);
@@ -216,7 +223,7 @@ class IntRootedForest {
   }
 
   std::vector<int> dfs_reverse_preorder_nodes(int index) const {
-    if (!is_valid(index)) throw std::invalid_argument("dfs_reverse_preorder_nodes: invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("dfs_reverse_preorder_nodes: invalid index"));
 
     std::vector<int> ret, stack;
     stack.push_back(index);
@@ -238,7 +245,7 @@ class IntRootedForest {
    * @return std::vector<int>
    */
   std::vector<int> get_leaves(int index) const {
-    if (!is_valid(index)) throw std::invalid_argument("get_leaves: invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("get_leaves: invalid index"));
 
     std::vector<int> ret;
     for (auto x : dfs_reverse_preorder_nodes(index)) {
@@ -248,7 +255,7 @@ class IntRootedForest {
   }
 
   std::vector<int> get_ancestors(int index) const {
-    if (!is_valid(index)) throw std::invalid_argument("get_ancestors: invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("get_ancestors: invalid index"));
 
     std::vector<int> ret;
     for (auto p = nodes_[index].parent; p != NOT_AVAILABLE; p = nodes_[p].parent) ret.push_back(p);
@@ -256,7 +263,7 @@ class IntRootedForest {
   }
 
   int get_root(int index) const {
-    if (!is_valid(index)) throw std::invalid_argument("get_root: invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("get_root: invalid index"));
 
     int ret = NOT_AVAILABLE;
     for (auto p = index; p != NOT_AVAILABLE; p = nodes_[p].parent) ret = p;
@@ -311,9 +318,9 @@ class IntRootedForest {
   }
 
   void remove(int index) {
-    if (!is_valid(index)) throw std::invalid_argument("remove: invalid index");
+    VALIDATE(if (!is_valid(index)) throw std::invalid_argument("remove: invalid index"));
     detach(index);
-    if (!nodes_[index].is_leaf()) throw std::invalid_argument("remove: must be a leaf");
+    VALIDATE(if (!nodes_[index].is_leaf()) throw std::invalid_argument("remove: must be a leaf"));
 
     --num_live_nodes_;
     nodes_[index].alive = false;
@@ -325,12 +332,16 @@ class IntRootedForest {
   //================================================================================
  private:
   void add_child(int parent, int child) {
-    if (!is_valid(parent)) throw std::invalid_argument("add_child: parent invalid index");
-    if (!is_valid(child)) throw std::invalid_argument("add_child: child invalid index");
+    VALIDATE({
+      if (!is_valid(parent)) throw std::invalid_argument("add_child: parent invalid index");
+      if (!is_valid(child)) throw std::invalid_argument("add_child: child invalid index");
+    });
     auto& p = nodes_[parent];
     auto& c = nodes_[child];
 
-    if (!c.is_root()) throw std::invalid_argument("add_child: child must be a root");
+    VALIDATE({
+      if (!c.is_root()) throw std::invalid_argument("add_child: child must be a root");
+    });
 
     if (p.has_child()) {
       nodes_[p.first_child].left = child;
@@ -344,7 +355,9 @@ class IntRootedForest {
 
  public:
   void detach(int index) {
-    if (!is_valid(index)) throw std::invalid_argument("detach: invalid index");
+    VALIDATE({
+      if (!is_valid(index)) throw std::invalid_argument("detach: invalid index");
+    });
 
     auto& node = nodes_[index];
     if (node.parent != NOT_AVAILABLE) nodes_[node.parent].num_children--;
@@ -358,10 +371,11 @@ class IntRootedForest {
   };
 
   void swap(int a, int b) {
-    if (!is_valid(a)) throw std::invalid_argument("swap: a invalid index");
-    if (!is_valid(b)) throw std::invalid_argument("swap: b invalid index");
-    if (get_root(a) == get_root(b)) throw std::invalid_argument("swap: a and b must belong to different trees");
-
+    VALIDATE({
+      if (!is_valid(a)) throw std::invalid_argument("swap: a invalid index");
+      if (!is_valid(b)) throw std::invalid_argument("swap: b invalid index");
+      if (get_root(a) == get_root(b)) throw std::invalid_argument("swap: a and b must belong to different trees")
+    });
     // if (a == b) return; // never happens
 
     auto& na = nodes_[a];
@@ -386,20 +400,25 @@ class IntRootedForest {
    * @param replace_by not to replace
    */
   void replace(int index, int replace_by) {
-    if (!is_valid(index)) throw std::invalid_argument("replace: invalid index");
-    if (!is_valid(replace_by)) throw std::invalid_argument("replace: replace_by invalid index");
-    if (index == replace_by) throw std::invalid_argument("replace: replace_by must differ from index");
-    if (util::contains(get_ancestors(index), replace_by))
-      throw std::invalid_argument("replace: replace_by cannot be an ancestor of index");
+    VALIDATE({
+      if (!is_valid(index)) throw std::invalid_argument("replace: invalid index");
+      if (!is_valid(replace_by)) throw std::invalid_argument("replace: replace_by invalid index");
+      if (index == replace_by) throw std::invalid_argument("replace: replace_by must differ from index");
+      if (util::contains(get_ancestors(index), replace_by)) {
+        throw std::invalid_argument("replace: replace_by cannot be an ancestor of index");
+      }
+    });
 
     detach(replace_by);
     swap(index, replace_by);
   }
 
   void move_to(int index, int new_parent) {
-    if (!is_valid(index)) throw std::invalid_argument("move_to: invalid index");
-    if (!is_valid(new_parent)) throw std::invalid_argument("move_to: new_parent invalid index");
-    if (index == new_parent) throw std::invalid_argument("move_to: index and new_parent cannot be the same");
+    VALIDATE({
+      if (!is_valid(index)) throw std::invalid_argument("move_to: invalid index");
+      if (!is_valid(new_parent)) throw std::invalid_argument("move_to: new_parent invalid index");
+      if (index == new_parent) throw std::invalid_argument("move_to: index and new_parent cannot be the same");
+    });
 
     detach(index);
     add_child(new_parent, index);
@@ -410,12 +429,15 @@ class IntRootedForest {
    * @param node node that is not a root
    */
   void move_to_before(int index, int target) {
-    if (!is_valid(index)) throw std::invalid_argument("move_to_after: invalid index");
-    if (!is_valid(target)) throw std::invalid_argument("move_to_after: target invalid index");
-    if (nodes_[target].is_root()) throw std::invalid_argument("move_to_before: target must not be a root");
-    if (index == target) throw std::invalid_argument("move_to_after: index and target cannot be the same");
-    if (util::contains(get_ancestors(target), index))
-      throw std::invalid_argument("replace: index cannot be an ancestor of target");
+    VALIDATE({
+      if (!is_valid(index)) throw std::invalid_argument("move_to_after: invalid index");
+      if (!is_valid(target)) throw std::invalid_argument("move_to_after: target invalid index");
+      if (nodes_[target].is_root()) throw std::invalid_argument("move_to_before: target must not be a root");
+      if (index == target) throw std::invalid_argument("move_to_after: index and target cannot be the same");
+      if (util::contains(get_ancestors(target), index)) {
+        throw std::invalid_argument("replace: index cannot be an ancestor of target");
+      }
+    });
 
     detach(index);
 
@@ -437,12 +459,15 @@ class IntRootedForest {
    * @param node node that is not a root
    */
   void move_to_after(int index, int target) {
-    if (!is_valid(index)) throw std::invalid_argument("move_to_after: invalid index");
-    if (!is_valid(target)) throw std::invalid_argument("move_to_after: target invalid index");
-    if (nodes_[target].is_root()) throw std::invalid_argument("move_to_after: target must not be a root");
-    if (index == target) throw std::invalid_argument("move_to_after: index and target cannot be the same");
-    if (util::contains(get_ancestors(target), index))
-      throw std::invalid_argument("move_to_after: index cannot be an ancestor of target");
+    VALIDATE({
+      if (!is_valid(index)) throw std::invalid_argument("move_to_after: invalid index");
+      if (!is_valid(target)) throw std::invalid_argument("move_to_after: target invalid index");
+      if (nodes_[target].is_root()) throw std::invalid_argument("move_to_after: target must not be a root");
+      if (index == target) throw std::invalid_argument("move_to_after: index and target cannot be the same");
+      if (util::contains(get_ancestors(target), index)) {
+        throw std::invalid_argument("move_to_after: index cannot be an ancestor of target");
+      }
+    });
 
     detach(index);
 
@@ -462,7 +487,9 @@ class IntRootedForest {
    * @brief Moves this node to the first among all its siblings.
    */
   void make_first_child(int index) {
-    if (!is_valid(index)) throw std::invalid_argument("make_first_child: invalid index");
+    VALIDATE({
+      if (!is_valid(index)) throw std::invalid_argument("make_first_child: invalid index");
+    });
 
     if (nodes_[index].is_root() || nodes_[index].is_first_child()) return;  // do nothing
 
@@ -474,10 +501,13 @@ class IntRootedForest {
    * @param node node whose children are to be added to this node's children
    */
   void add_children_from(int index, int target) {
-    if (!is_valid(index)) throw std::invalid_argument("add_children_from: invalid index");
-    if (!is_valid(target)) throw std::invalid_argument("add_children_from: target invalid index");
-    if (util::contains(get_ancestors(index), target))
-      throw std::invalid_argument("add_children_from: target cannot be an ancestor of index");
+    VALIDATE({
+      if (!is_valid(index)) throw std::invalid_argument("add_children_from: invalid index");
+      if (!is_valid(target)) throw std::invalid_argument("add_children_from: target invalid index");
+      if (util::contains(get_ancestors(index), target)) {
+        throw std::invalid_argument("add_children_from: target cannot be an ancestor of index");
+      }
+    });
 
     if (index == target) return;  // do nothing
 
@@ -504,12 +534,17 @@ class IntRootedForest {
    * This original node will be detached form its tree but not removed.
    */
   void replace_by_children(int index) {
-    if (!is_valid(index)) throw std::invalid_argument("replace_by_children: invalid index");
-    auto& node = nodes_[index];
-    if (node.is_root()) throw std::invalid_argument("replace_by_children:this must not be a root");
+    VALIDATE({
+      if (!is_valid(index)) throw std::invalid_argument("replace_by_children: invalid index");
+      auto& node = nodes_[index];
+      if (node.is_root()) throw std::invalid_argument("replace_by_children:this must not be a root");
+    });
 
-    auto ch = get_children(index);
-    for (auto c : ch) move_to_before(c, index);
+    for (auto c = nodes_[index].first_child; c != NOT_AVAILABLE;) {
+      auto nxt = nodes_[c].right;
+      move_to_before(c, index);
+      c = nxt;
+    }
     detach(index);
   }
 

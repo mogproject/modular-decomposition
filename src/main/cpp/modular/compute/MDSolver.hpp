@@ -27,7 +27,7 @@ int compute(ds::graph::Graph const &graph, CompTree &tree, int main_prob, util::
 void process_neighbors(             //
     ds::graph::Graph const &graph,  //
     CompTree &tree,                 //
-    VI alpha_list[],                //
+    VVV &alpha_list,                //
     bool const visited[],           //
     VertexID pivot,                 //
     int current_prob,               //
@@ -35,19 +35,19 @@ void process_neighbors(             //
 );
 int do_pivot(ds::graph::Graph const &graph,  //
              CompTree &tree,                 //
-             VI alpha_list[],                //
+             VVV &alpha_list,                //
              bool const visited[],           //
              int prob,                       //
              VertexID pivot                  //
 );
 int remove_extra_components(CompTree &tree, int prob);
 void remove_layers(CompTree &tree, int prob);
-void complete_alpha_lists(CompTree &tree, VI alpha_list[], ds::FastSet &vset, int prob);
+void complete_alpha_lists(CompTree &tree, VVV &alpha_list, ds::FastSet &vset, int prob, std::vector<int> &leaves);
 void merge_components(CompTree &tree, int problem, int new_components);
 
-void refine(CompTree &tree, VI const alpha_list[], int prob);
+void refine(CompTree &tree, VVV const &alpha_list, int prob, std::vector<int> &leaves, util::Profiler *prof);
 void promote(CompTree &tree, int prob);
-void assemble(CompTree &tree, VI const *alpha_list, int prob);
+void assemble(CompTree &tree, VVV const &alpha_list, int prob, VVV &fp_neighbors, ds::FastSet &vset, util::Profiler *prof);
 }  // namespace impl
 
 class MDSolver {

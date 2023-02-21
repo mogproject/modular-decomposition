@@ -34,6 +34,9 @@ class MDComputeNode:
         self.vertex = vertex
         self.comp_number = comp_number
         self.tree_number = tree_number
+        self.num_marks = 0  # used only in refinement
+        self.num_left_split_children = 0  # used only in refinement
+        self.num_right_split_children = 0  # used only in refinement
         self.active = active
         self.connected = connected
 
@@ -62,6 +65,12 @@ class MDComputeNode:
     def is_problem_node(self) -> bool: return self.node_type == NodeType.PROBLEM
     def is_operation_node(self) -> bool: return self.node_type == NodeType.OPERATION
 
+    def add_mark(self) -> None:
+        self.num_marks += 1
+
+    def clear_marks(self) -> None:
+        self.num_marks = 0
+
     def is_split_marked(self, split_type: SplitDirection):
         return self.split_type in [split_type, SplitDirection.MIXED]
 
@@ -75,10 +84,36 @@ class MDComputeNode:
         else:
             self.split_type = SplitDirection.MIXED
 
+    def increment_num_split_children(self, split_type: SplitDirection) -> None:
+        assert split_type in [SplitDirection.LEFT, SplitDirection.RIGHT]
+
+        if split_type == SplitDirection.LEFT:
+            self.num_left_split_children += 1
+        else:
+            self.num_right_split_children += 1
+
+    def decrement_num_split_children(self, split_type: SplitDirection) -> None:
+        assert split_type in [SplitDirection.LEFT, SplitDirection.RIGHT]
+
+        if split_type == SplitDirection.LEFT:
+            self.num_left_split_children -= 1
+        else:
+            self.num_right_split_children -= 1
+
+    def get_num_split_children(self, split_type: SplitDirection) -> int:
+        assert split_type in [SplitDirection.LEFT, SplitDirection.RIGHT]
+
+        return self.num_left_split_children if split_type == SplitDirection.LEFT else self.num_right_split_children
+
+    def clear_num_split_children(self) -> None:
+        self.num_left_split_children = 0
+        self.num_right_split_children = 0
+
     def clear(self) -> None:
         self.comp_number = -1
         self.tree_number = -1
         self.split_type = SplitDirection.NONE
+        self.clear_num_split_children()
 
     def __str__(self) -> str:
         if self.node_type == NodeType.VERTEX:

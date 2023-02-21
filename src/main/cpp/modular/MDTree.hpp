@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util/profiler.hpp"
+
 #include "compute/MDSolver.hpp"
 
 namespace modular {
@@ -47,8 +49,8 @@ class MDTree {
 
  public:
   MDTree() : root_(-1){};
-  MDTree(ds::graph::Graph const &graph, bool sorted = false) {
-    auto result = compute::MDSolver::compute(graph);
+  MDTree(ds::graph::Graph const &graph, bool sorted = false, util::Profiler *prof = nullptr) {
+    auto result = compute::MDSolver::compute(graph, prof);
     if (result.second >= 0) {
       *this = MDTree(result.first, result.second);
       if (sorted) this->sort();
@@ -160,5 +162,6 @@ class MDTree {
 
 MDTree modular_decomposition(ds::graph::Graph const &graph, bool sorted = false);
 
-std::pair<MDTree, double> modular_decomposition_time(ds::graph::Graph const &graph, bool sorted = false);
+std::pair<MDTree, double> modular_decomposition_time(ds::graph::Graph const &graph, bool sorted = false,
+                                                     util::Profiler *prof = nullptr);
 }  // namespace modular

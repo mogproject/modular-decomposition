@@ -39,7 +39,7 @@ static std::vector<bool> determine_right_comp_fragments(CompTree const &tree, VI
  * @note Read: MDNode::tree_number for each root and leaf
  *             MDLeaf::alpha       for each leaf
  */
-static std::vector<bool> determine_right_layer_neighbor(CompTree const &tree, VI const *alpha_list, VI const &ps, int pivot_index) {
+static std::vector<bool> determine_right_layer_neighbor(CompTree const &tree, VVV const &alpha_list, VI const &ps, int pivot_index) {
   std::vector<bool> ret(ps.size());
   for (int i = pivot_index + 1; i < static_cast<int>(ps.size()); ++i) {
     int current_tree = ps[i];
@@ -64,48 +64,56 @@ static std::vector<bool> determine_right_layer_neighbor(CompTree const &tree, VI
 /**
  * @brief Computes the edges between factorized-permutation elements.
  *
+ * @param fp_neighbors vector of neighboring factorized-permutation indices
+ * 
  * @note Read  : MDLeaf::alpha       for each leaf
  *       Update: MDLeaf::comp_number for each leaf
- * @return vector of neighboring factorized-permutation indices
+ * 
  */
-static VVV compute_fact_perm_edges(CompTree &tree, VI const *alpha_list, VI const &ps) {
+static void compute_fact_perm_edges(CompTree &tree, VVV const &alpha_list, VI const &ps, int pivot_index,
+                                    ds::FastSet &vset, VVV &fp_neighbors) {
   // TRACE("start: %s\n", to_string().c_str());
   int k = static_cast<int>(ps.size());
-  VVV neighbors(k);
-  std::vector<int> element_sizes(k);
+  for (int i = 0; i < pivot_index; ++i) fp_neighbors[i].clear();
+  std::vector<std::vector<int>> leaves(pivot_index);
 
   // initialize
   for (int i = 0; i < k; ++i) {
-    for (auto leaf : tree.get_leaves(ps[i])) {
-      tree[leaf].data.comp_number = i;  // reset the comp number to index
-      ++element_sizes[i];               // increment the element size
+    if (i < pivot_index) {
+      leaves[i] = tree.get_leaves(ps[i]);
+      for (auto leaf : leaves[i]) tree[leaf].data.comp_number = i;  // reset the comp number to index
+    } else {
+      for (auto leaf : tree.get_leaves(ps[i])) tree[leaf].data.comp_number = i;  // reset the comp number to index
     }
   }
 
-  // find joins
-  for (int i = 0; i < k; ++i) {
-    std::vector<int> candidates;
-    std::vector<int> marks(k);
+  // we need the neighbors only up to pivot_index
+  for (int i = 0; i < pivot_index; ++i) {
+    vset.clear();  // used for making candidates unique
 
     // enumerate all edges
-    for (auto leaf : tree.get_leaves(ps[i])) {
+    bool done = false;
+    for (auto leaf : leaves[i]) {
       for (auto a : alpha_list[leaf]) {
         int j = tree[a].data.comp_number;
-        candidates.push_back(j);
-        ++marks[j];
-      }
-    }
 
-    for (auto j : candidates) {
-      if (element_sizes[i] * element_sizes[j] == marks[j]) {
-        // found a join between i and j
-        neighbors[i].push_back(j);
-        marks[j] = 0;  // reset marks so that there will be no duplicates
+        if (!vset.get(j)) {
+          fp_neighbors[i].push_back(j);
+          vset.set(j);
+          if (static_cast<int>(fp_neighbors[i].size()) == k - pivot_index) {  // reached the max possible
+            done = true;
+            break;
+          }
+        }
       }
+      if (done) break;
     }
   }
+  // TODO: Prove:
+  //    If v <- alpha_list[u] with u in component i and v in component j,
+  //    then components i and j must form a full join.
+
   // TRACE("finish: %s\n", to_string().c_str());
-  return neighbors;
 }
 
 //================================================================================
@@ -311,7 +319,7 @@ static void remove_degenerate_duplicates(CompTree &tree, int index) {
 //================================================================================
 //    Main process
 //================================================================================
-void assemble(CompTree &tree, VI const *alpha_list, int prob) {
+void assemble(CompTree &tree, VVV const &alpha_list, int prob, VVV &fp_neighbors, ds::FastSet &vset, util::Profiler *prof) {
   if (tree[prob].is_leaf()) throw std::invalid_argument("roots must not be empty");
 
   // build permutation
@@ -326,14 +334,31 @@ void assemble(CompTree &tree, VI const *alpha_list, int prob) {
   if (pivot_index < 0) throw std::invalid_argument("roots must include a pivot");
 
   // main logic
+  // PROF(util::pstart(prof, "assemble: determine"));
   auto lcocomp = determine_left_cocomp_fragments(tree, ps, pivot_index);
   auto rcomp = determine_right_comp_fragments(tree, ps, pivot_index);
   auto rlayer = determine_right_layer_neighbor(tree, alpha_list, ps, pivot_index);
-  auto neighbors = compute_fact_perm_edges(tree, alpha_list, ps);
-  auto mu = compute_mu(tree, ps, pivot_index, neighbors);
+  // PROF(util::pstop(prof, "assemble: determine"));
+
+  // PROF(util::pstart(prof, "assemble: fact perm"));
+  compute_fact_perm_edges(tree, alpha_list, ps, pivot_index, vset, fp_neighbors);
+  // PROF(util::pstop(prof, "assemble: fact perm"));
+
+  // PROF(util::pstart(prof, "assemble: compute mu"));
+  auto mu = compute_mu(tree, ps, pivot_index, fp_neighbors);
+  // PROF(util::pstop(prof, "assemble: compute mu"));
+
+  // PROF(util::pstart(prof, "assemble: delineate"));
   auto boundaries = delineate(pivot_index, lcocomp, rcomp, rlayer, mu);
+  // PROF(util::pstop(prof, "assemble: delineate"));
+
+  // PROF(util::pstart(prof, "assemble: assemble tree"));
   auto root = assemble_tree(tree, ps, pivot_index, boundaries);
+  // PROF(util::pstop(prof, "assemble: assemble tree"));
+
+  // PROF(util::pstart(prof, "assemble: remove dup"));
   remove_degenerate_duplicates(tree, root);
+  // PROF(util::pstop(prof, "assemble: remove dup"));
 
   // replace the problem node with the result
   tree.replace_children(prob, root);

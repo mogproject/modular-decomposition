@@ -59,7 +59,7 @@ class MDNaiveSolver:
         return M + M.T
 
     @staticmethod
-    def compute(G: nx.Graph) -> tuple[RootedForest[MDNode], Node[MDNode], list[VertexId]]:
+    def compute(G: nx.Graph, verify: bool = False) -> tuple[RootedForest[MDNode], Node[MDNode], list[VertexId]]:
         # Implements the algorithm described in
         # "A Fast Algorithm for the Decomposition of Graphs and Posets"
         # Hermann Buer and Rolf H. Möhring (1983)
@@ -73,7 +73,7 @@ class MDNaiveSolver:
         n = len(G)
         vertices = list(G.nodes())
 
-        tree: RootedForest[MDNode] = RootedForest()
+        tree: RootedForest[MDNode] = RootedForest(verify=verify)
         root = tree.create_node(MDNode(None, None, 0, n))
 
         q: deque[Node[MDNode]] = deque()
