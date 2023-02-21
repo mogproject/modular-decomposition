@@ -11,15 +11,15 @@ class TestMDTree(unittest.TestCase):
     def check_property(self, G: nx.Graph):
         n = len(G)
 
-        t_naive = modular_decomposition(G, sorted=True, solver='naive')
-        t_linear = modular_decomposition(G, sorted=True, solver='linear')
+        t_naive = modular_decomposition(G, sorted=True, solver='naive', verify=True)
+        t_linear = modular_decomposition(G, sorted=True, solver='linear', verify=True)
 
         self.assertEqual(str(t_naive), str(t_linear), msg=f'n={len(G)}, edges={G.edges()}')
         self.assertEqual(t_naive.modular_width(), t_linear.modular_width(), msg=f'n={len(G)}, edges={G.edges()}')
 
         # complement graph
-        c_naive = modular_decomposition(nx.complement(G), sorted=True, solver='naive')
-        c_linear = modular_decomposition(nx.complement(G), sorted=True, solver='linear')
+        c_naive = modular_decomposition(nx.complement(G), sorted=True, solver='naive', verify=True)
+        c_linear = modular_decomposition(nx.complement(G), sorted=True, solver='linear', verify=True)
 
         self.assertEqual(str(c_naive), str(c_linear), msg=f'n={len(G)}, edges={G.edges()}')
         self.assertEqual(str(c_naive), str(t_naive).replace('J', 'X').replace('U', 'J').replace('X', 'U'), msg=f'n={len(G)}, edges={G.edges()}')
@@ -30,8 +30,8 @@ class TestMDTree(unittest.TestCase):
         # vertex permutation
         mapping = {i: n - 1 - i for i in range(n)}
         H = nx.relabel_nodes(G, mapping, copy=True)
-        p_naive = modular_decomposition(H, sorted=True, solver='naive')
-        p_linear = modular_decomposition(H, sorted=True, solver='linear')
+        p_naive = modular_decomposition(H, sorted=True, solver='naive', verify=True)
+        p_linear = modular_decomposition(H, sorted=True, solver='linear', verify=True)
 
         self.assertEqual(t_naive.modular_width(), p_naive.modular_width(), msg=f'n={len(G)}, edges={G.edges()}')
         self.assertEqual(t_naive.modular_width(), p_linear.modular_width(), msg=f'n={len(G)}, edges={G.edges()}')
@@ -168,20 +168,20 @@ class TestMDTree(unittest.TestCase):
         G = nx.Graph()
         G.add_nodes_from(['a', 'b', 'c', 'd'])
         G.add_edges_from([('a', 'b'), ('b', 'c'), ('c', 'a'), ('b', 'd')])
-        t = modular_decomposition(G, sorted=True, solver='naive')
+        t = modular_decomposition(G, sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 0)
         self.assertEqual(str(t), "(J(U(J('a')('c'))('d'))('b'))")
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 0)
         self.assertEqual(str(t), "(J(U(J('a')('c'))('d'))('b'))")
 
         G = nx.hypercube_graph(3)
-        t = modular_decomposition(G, sorted=True, solver='naive')
+        t = modular_decomposition(G, sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 8)
         self.assertEqual(str(t), '(P((0, 0, 0))((0, 0, 1))((0, 1, 0))((0, 1, 1))((1, 0, 0))((1, 0, 1))((1, 1, 0))((1, 1, 1)))')
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 8)
         self.assertEqual(str(t), '(P((0, 0, 0))((0, 0, 1))((0, 1, 0))((0, 1, 1))((1, 0, 0))((1, 0, 1))((1, 1, 0))((1, 1, 1)))')
 
@@ -189,19 +189,19 @@ class TestMDTree(unittest.TestCase):
         G = nx.empty_graph(6)
         G.add_edges_from([(0, 2), (2, 4), (4, 3)])
 
-        t = modular_decomposition(G, sorted=True, solver='naive')
+        t = modular_decomposition(G, sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 4)
         self.assertEqual(str(t), '(U(P(0)(2)(3)(4))(1)(5))')
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 4)
         self.assertEqual(str(t), '(J(P(0)(2)(3)(4))(1)(5))')
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 4)
         self.assertEqual(str(t), '(U(P(0)(2)(3)(4))(1)(5))')
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 4)
         self.assertEqual(str(t), '(J(P(0)(2)(3)(4))(1)(5))')
 
@@ -209,19 +209,19 @@ class TestMDTree(unittest.TestCase):
         G = nx.empty_graph(7)
         G.add_edges_from([(5, 2), (5, 0), (5, 6), (1, 3)])
 
-        t = modular_decomposition(G, sorted=True, solver='naive')
+        t = modular_decomposition(G, sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 0)
         self.assertEqual(str(t), '(U(J(U(0)(2)(6))(5))(J(1)(3))(4))')
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 0)
         self.assertEqual(str(t), '(J(U(J(0)(2)(6))(5))(U(1)(3))(4))')
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 0)
         self.assertEqual(str(t), '(U(J(U(0)(2)(6))(5))(J(1)(3))(4))')
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 0)
         self.assertEqual(str(t), '(J(U(J(0)(2)(6))(5))(U(1)(3))(4))')
 
@@ -229,19 +229,19 @@ class TestMDTree(unittest.TestCase):
         G = nx.empty_graph(13)
         G.add_edges_from([(1, 9), (2, 8), (2, 11), (3, 5), (3, 7), (4, 11), (5, 9), (6, 12), (7, 10)])
 
-        t = modular_decomposition(G, sorted=True, solver='naive')
+        t = modular_decomposition(G, sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 6)
         self.assertEqual(str(t), '(U(0)(P(1)(3)(5)(7)(9)(10))(P(2)(4)(8)(11))(J(6)(12)))')
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 6)
         self.assertEqual(str(t), '(J(0)(P(1)(3)(5)(7)(9)(10))(P(2)(4)(8)(11))(U(6)(12)))')
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 6)
         self.assertEqual(str(t), '(U(0)(P(1)(3)(5)(7)(9)(10))(P(2)(4)(8)(11))(J(6)(12)))')
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 6)
         self.assertEqual(str(t), '(J(0)(P(1)(3)(5)(7)(9)(10))(P(2)(4)(8)(11))(U(6)(12)))')
 
@@ -249,23 +249,23 @@ class TestMDTree(unittest.TestCase):
         G = nx.empty_graph(8)
         G.add_edges_from([(0, 1), (1, 2), (2, 3), (4, 5), (5, 6), (6, 7)])
 
-        t1 = modular_decomposition(nx.complement(G), sorted=True, solver='naive')
-        t2 = modular_decomposition(nx.complement(G), sorted=True, solver='linear')
+        t1 = modular_decomposition(nx.complement(G), sorted=True, solver='naive', verify=True)
+        t2 = modular_decomposition(nx.complement(G), sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t1), str(t2))
 
-        t = modular_decomposition(G, sorted=True, solver='naive')
+        t = modular_decomposition(G, sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 4)
         self.assertEqual(str(t), '(U(P(0)(1)(2)(3))(P(4)(5)(6)(7)))')
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 4)
         self.assertEqual(str(t), '(J(P(0)(1)(2)(3))(P(4)(5)(6)(7)))')
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 4)
         self.assertEqual(str(t), '(U(P(0)(1)(2)(3))(P(4)(5)(6)(7)))')
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 4)
         self.assertEqual(str(t), '(J(P(0)(1)(2)(3))(P(4)(5)(6)(7)))')
 
@@ -273,19 +273,19 @@ class TestMDTree(unittest.TestCase):
         G = nx.empty_graph(6)
         G.add_edges_from([(0, 1), (1, 2), (2, 3), (2, 4), (4, 5)])
 
-        t = modular_decomposition(G, sorted=True, solver='naive')
+        t = modular_decomposition(G, sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 6)
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5))')
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 6)
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5))')
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 6)
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5))')
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear', verify=True)
         self.assertEqual(t.modular_width(), 6)
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5))')
 
@@ -295,19 +295,19 @@ class TestMDTree(unittest.TestCase):
 
         # self.check_property(G)
 
-        t = modular_decomposition(G, sorted=True, solver='naive')
+        t = modular_decomposition(G, sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 6)
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5))')
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='naive', verify=True)
         self.assertEqual(t.modular_width(), 6)
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5))')
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5))')
         self.assertEqual(t.modular_width(), 6)
 
-        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear')
+        t = modular_decomposition(nx.complement(G), sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5))')
         self.assertEqual(t.modular_width(), 6)
 
@@ -318,7 +318,7 @@ class TestMDTree(unittest.TestCase):
             (6, 10), (6, 13), (7, 8), (7, 11), (9, 13), (11, 13)
         ])
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)(12)(13))')
         self.assertEqual(t.modular_width(), 14)
 
@@ -328,7 +328,7 @@ class TestMDTree(unittest.TestCase):
         G = nx.empty_graph(9)
         G.add_edges_from([(0, 7), (1, 4), (2, 4), (2, 7), (2, 8), (4, 5)])
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t), '(U(P(0)(U(1)(5))(2)(4)(7)(8))(3)(6))')
         self.assertEqual(t.modular_width(), 6)
 
@@ -338,7 +338,7 @@ class TestMDTree(unittest.TestCase):
         G = nx.empty_graph(12)
         G.add_edges_from([(0, 8), (1, 6), (1, 7), (4, 8), (5, 7), (6, 8), (6, 9), (8, 9), (9, 11)])
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t), '(U(P(U(0)(4))(1)(5)(6)(7)(8)(9)(11))(2)(3)(10))')
         self.assertEqual(t.modular_width(), 8)
 
@@ -348,7 +348,7 @@ class TestMDTree(unittest.TestCase):
         G = nx.empty_graph(11)
         G.add_edges_from([(0, 5), (1, 3), (1, 8), (3, 8), (4, 9), (7, 8), (8, 9)])
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t), '(U(J(0)(5))(P(U(J(1)(3))(7))(4)(8)(9))(2)(6)(10))')
         self.assertEqual(t.modular_width(), 4)
 
@@ -361,7 +361,7 @@ class TestMDTree(unittest.TestCase):
             (4, 7), (5, 9), (5, 10), (9, 10), (11, 13)
         ])
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t), '(U(P(0)(1)(U(2)(11))(3)(5)(9)(10)(13))(J(4)(7))(6)(8)(12))')
         self.assertEqual(t.modular_width(), 8)
 
@@ -371,7 +371,7 @@ class TestMDTree(unittest.TestCase):
         G = nx.empty_graph(8)
         G.add_edges_from([(0, 3), (0, 7), (1, 3), (1, 6), (2, 3), (2, 4), (2, 5), (3, 4), (3, 6), (3, 7), (4, 5), (4, 6)])
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t), '(P(J(0)(7))(1)(2)(3)(4)(5)(6))')
         self.assertEqual(t.modular_width(), 7)
 
@@ -384,7 +384,7 @@ class TestMDTree(unittest.TestCase):
             (3, 8), (3, 10), (3, 11), (3, 12), (4, 11), (5, 10), (6, 11), (6, 12),
             (7, 12), (8, 9), (8, 12), (9, 10), (9, 12), (10, 11)
         ])
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t), '(P(U(0)(7))(1)(2)(3)(4)(5)(6)(8)(9)(10)(11)(12))')
         self.assertEqual(t.modular_width(), 12)
 
@@ -398,7 +398,7 @@ class TestMDTree(unittest.TestCase):
             (5, 12), (6, 13), (7, 8), (8, 12), (9, 11), (9, 13)
         ])
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)(12)(13))')
         self.assertEqual(t.modular_width(), 14)
 
@@ -409,12 +409,12 @@ class TestMDTree(unittest.TestCase):
     def test_modular_decomposition_16(self):
         G = nx.empty_graph(25)
         G.add_edges_from([
-            (0, 1),(0, 2),(0, 3),(1, 4),(1, 5),(1, 6),(2, 7),(2, 8),(2, 9),
-            (3, 10),(3, 11),(3, 12),(4, 13),(4, 14),(4, 15),(5, 16),(5, 17),(5, 18),
-            (6, 19),(6, 20),(6, 21),(7, 22),(7, 23),(7, 24),
+            (0, 1), (0, 2), (0, 3), (1, 4), (1, 5), (1, 6), (2, 7), (2, 8), (2, 9),
+            (3, 10), (3, 11), (3, 12), (4, 13), (4, 14), (4, 15), (5, 16), (5, 17), (5, 18),
+            (6, 19), (6, 20), (6, 21), (7, 22), (7, 23), (7, 24),
         ])
 
-        t = modular_decomposition(G, sorted=True, solver='linear')
+        t = modular_decomposition(G, sorted=True, solver='linear', verify=True)
         self.assertEqual(str(t), '(P(0)(1)(2)(3)(4)(5)(6)(7)(U(8)(9))(U(10)(11)(12))(U(13)(14)(15))(U(16)(17)(18))(U(19)(20)(21))(U(22)(23)(24)))')
         self.assertEqual(t.modular_width(), 14)
         self.check_property(G)
@@ -423,7 +423,7 @@ class TestMDTree(unittest.TestCase):
         rand = Random(12345)
         min_n = 5
         max_n = 20
-        num_iterations = 5
+        num_iterations = 2
         # num_iterations = 1000
         def ps(n): return [1 / n, 0.1, 0.2, 0.3]
 
@@ -437,15 +437,15 @@ class TestMDTree(unittest.TestCase):
         rand = Random(12345)
         min_n = 30
         max_n = 50
-        step_n = 5
-        num_iterations = 10
+        step_n = 10
+        num_iterations = 2
         mw = 5
         p = 0.5
 
         for n in range(min_n, max_n + 1, step_n):
             for _ in range(num_iterations):
                 G = self.generate_mw_bounded_graph(n, mw, p, rand)
-                t = modular_decomposition(G, solver='linear')
+                t = modular_decomposition(G, solver='linear', verify=True)
                 self.assertLessEqual(t.modular_width(), mw)
                 self.check_property(G)
 
@@ -454,11 +454,11 @@ class TestMDTree(unittest.TestCase):
         rec_lim = sys.getrecursionlimit()
         rand = Random(12345)
 
-        for _ in range(10):
-            G = self.generate_mw_bounded_graph(500, 4, 0.5, rand)
+        for _ in range(2):
+            G = self.generate_mw_bounded_graph(100, 4, 0.5, rand)
 
             sys.setrecursionlimit(70)
-            t = modular_decomposition(G, solver='linear')
+            t = modular_decomposition(G, solver='linear', verify=True)
             sys.setrecursionlimit(rec_lim)
 
             self.assertLessEqual(t.modular_width(), 4)

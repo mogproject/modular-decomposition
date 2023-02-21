@@ -45,6 +45,11 @@ class Node(Generic[T]):
     def has_only_one_child(self) -> bool: return self.num_children == 1
     def number_of_children(self) -> int: return self.num_children
 
+    def get_parent(self) -> Node[T]:
+        ret = self.parent
+        assert ret is not None
+        return ret
+
     def get_children(self) -> list[Node[T]]:
         """Returns a list of the (direct) children of this node."""
         x = self.first_child
@@ -155,9 +160,14 @@ class RootedForest(Generic[T]):
     Generic rooted forest (disjoint set of rooted trees).
     """
 
-    def __init__(self) -> None:
+    def __init__(self, verify: bool = False) -> None:
+        """
+        Args:
+            verify: True if verification is enabled
+        """
         self.roots: set[Node[T]] = set()
         self.size = 0
+        self.verify = verify
 
     def __len__(self) -> int: return self.size
     def __bool__(self) -> bool: return bool(self.roots)
@@ -213,7 +223,8 @@ class RootedForest(Generic[T]):
         self.roots.remove(node)
 
     def swap(self, a: Node[T], b: Node[T]) -> None:
-        assert a.get_root() != b.get_root(), 'swap: a and b must belong to different trees'
+        if self.verify:
+            assert a.get_root() != b.get_root(), 'swap: a and b must belong to different trees'
 
         for x, y in [(a, b), (b, a)]:
             if x.is_first_child():
@@ -234,7 +245,9 @@ class RootedForest(Generic[T]):
     def replace(self, node: Node[T], replace_by: Node[T]) -> None:
         """Replaces the node and its subtree with the given node."""
         assert node != replace_by, 'replace: replace_by must differ from node'
-        assert replace_by not in node.get_ancestors(), 'replace: replace_by cannot be an ancestor of node'
+
+        if self.verify:
+            assert replace_by not in node.get_ancestors(), 'replace: replace_by cannot be an ancestor of node'
 
         self.detach(replace_by)
         self.swap(node, replace_by)
@@ -243,7 +256,9 @@ class RootedForest(Generic[T]):
         """Moves the node to the left sibling of the given target."""
         assert target.parent is not None, 'move_to_before: target must not be a root'
         assert node != target, 'move_to_before: node and target must differ'
-        assert node not in target.get_ancestors(), 'move_to_before: target cannot be an ancestor of node'
+
+        if self.verify:
+            assert node not in target.get_ancestors(), 'move_to_before: target cannot be an ancestor of node'
 
         self.detach(node)
         self.roots.remove(node)
@@ -263,7 +278,9 @@ class RootedForest(Generic[T]):
         """Moves the node to the right sibling of the given target."""
         assert target.parent is not None, 'move_to_after: target must not be a root'
         assert node != target, 'move_to_after: node and target must differ'
-        assert node not in target.get_ancestors(), 'move_to_after: target cannot be an ancestor of node'
+
+        if self.verify:
+            assert node not in target.get_ancestors(), 'move_to_after: target cannot be an ancestor of node'
 
         self.detach(node)
         self.roots.remove(node)
@@ -285,7 +302,9 @@ class RootedForest(Generic[T]):
 
     def add_children_from(self, node: Node[T], target: Node[T]) -> None:
         """Moves all the children of the target to node."""
-        assert target not in node.get_ancestors(), 'add_children_from: target cannot be an ancestor of node'
+
+        if self.verify:
+            assert target not in node.get_ancestors(), 'add_children_from: target cannot be an ancestor of node'
 
         if node == target:
             return  # do nothing

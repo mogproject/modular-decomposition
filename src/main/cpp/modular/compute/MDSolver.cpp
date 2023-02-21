@@ -11,10 +11,10 @@ int compute(ds::graph::Graph const &graph, CompTree &tree, int main_prob, util::
   int n = graph.number_of_nodes();
   int current_prob = main_prob;
 
-  VI alpha_list[n];
+  VVV alpha_list(n);
+  VVV fp_neighbors(n);  // used only for assembly -> compute_fact_perm_edges()
   bool visited[n];
   for (int i = 0; i < n; ++i) {
-    alpha_list[i] = VI();
     visited[i] = false;
   }
   ds::FastSet vset(n);
@@ -35,14 +35,16 @@ int compute(ds::graph::Graph const &graph, CompTree &tree, int main_prob, util::
 
     auto &fc = tree[cp.first_child];
 
-    if (fc.data.node_type != NodeType::PROBLEM) {
+    if (!fc.data.is_problem_node()) {
       // first, needs to solve subproblems
       visited[cp.first_child] = true;  // set visited
 
       if (cp.has_only_one_child()) {
         // base case
         PROF(util::pcount(prof, "solve(): base case"));
+        PROF(util::pstart(prof, "process_neighbors()"));
         process_neighbors(graph, tree, alpha_list, visited, cp.first_child, current_prob, -1);
+        PROF(util::pstop(prof, "process_neighbors()"));
       } else {
         // pivot at the first child
         PROF(util::pstart(prof, "do_pivot()"));
@@ -65,11 +67,12 @@ int compute(ds::graph::Graph const &graph, CompTree &tree, int main_prob, util::
       PROF(util::pstop(prof, "remove_layers()"));
 
       PROF(util::pstart(prof, "complete_alpha_lists()"));
-      complete_alpha_lists(tree, alpha_list, vset, current_prob);
+      std::vector<int> leaves = tree.get_leaves(current_prob);
+      complete_alpha_lists(tree, alpha_list, vset, current_prob, leaves);
       PROF(util::pstop(prof, "complete_alpha_lists()"));
 
       PROF(util::pstart(prof, "refine()"));
-      refine(tree, alpha_list, current_prob);
+      refine(tree, alpha_list, current_prob, leaves, prof);
       PROF(util::pstop(prof, "refine()"));
 
       PROF(util::pstart(prof, "promote()"));
@@ -77,18 +80,20 @@ int compute(ds::graph::Graph const &graph, CompTree &tree, int main_prob, util::
       PROF(util::pstop(prof, "promote()"));
 
       PROF(util::pstart(prof, "assemble()"));
-      assemble(tree, alpha_list, current_prob);
+      assemble(tree, alpha_list, current_prob, fp_neighbors, vset, prof);
       PROF(util::pstop(prof, "assemble()"));
 
-      PROF(util::pstart(prof, "merge_components()"));
-      merge_components(tree, current_prob, extra_components);
-      PROF(util::pstop(prof, "merge_components()"));
-
       // clear all but visited
+      PROF(util::pstart(prof, "clear all but visited"));
       for (auto c: tree.dfs_reverse_preorder_nodes(tree[current_prob].first_child)) {
         if (tree[c].is_leaf()) alpha_list[c].clear();
         tree[c].data.clear();
       }
+      PROF(util::pstop(prof, "clear all but visited"));
+
+      PROF(util::pstart(prof, "merge_components()"));
+      merge_components(tree, current_prob, extra_components);
+      PROF(util::pstop(prof, "merge_components()"));
     }
 
     result = tree[current_prob].first_child;

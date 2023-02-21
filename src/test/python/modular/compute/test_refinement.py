@@ -145,3 +145,29 @@ class TestRefinement(unittest.TestCase):
         sg = group_sibling_nodes(tree, [op0])[0]
         refine_one_node(tree, sg[0], SplitDirection.LEFT, False)
         self.assertEqual(repr(prob), '(C-(P-(P-(J-(P-(P-(0-)(1-)(2-))(3-))(4-))(5-))(6-)(7-)(8-)))')
+
+        def setup2():
+            n = 16
+            tree: RootedForest[MDComputeNode] = RootedForest()
+            vs = list(reversed([tree.create_node(MDComputeNode.new_vertex_node(n - 1 - i)) for i in range(n)]))
+            prob = tree.create_node(MDComputeNode.new_problem_node(False))
+            ops = [tree.create_node(MDComputeNode.new_operation_node(OperationType.PRIME)) for _ in range(n - 1)]
+
+            tree.move_to(ops[0], prob)
+            for i in range(7):
+                tree.move_to(ops[i * 2 + 2], ops[i])
+                tree.move_to(ops[i * 2 + 1], ops[i])
+            for i in range(8):
+                tree.move_to(vs[i * 2 + 1], ops[7 + i])
+                tree.move_to(vs[i * 2], ops[7 + i])
+            return tree, prob, vs, ops
+
+        tree, prob, vs, ops = setup2()
+        refine_one_node(tree, vs[0], SplitDirection.RIGHT, False)
+        self.assertEqual(repr(prob), '(C-(P>(P>(P>(P>(0>)(1>))(P>(2-)(3-)))(P>(P-(4-)(5-))(P-(6-)(7-))))(P>(P-(P-(8-)(9-))(P-(10-)(11-)))(P-(P-(12-)(13-))(P-(14-)(15-))))))')
+
+        refine_one_node(tree, vs[15], SplitDirection.RIGHT, False)
+        self.assertEqual(repr(prob), '(C-(P>(P>(P>(P>(0>)(1>))(P>(2-)(3-)))(P>(P-(4-)(5-))(P-(6-)(7-))))(P>(P>(P-(8-)(9-))(P-(10-)(11-)))(P>(P>(12-)(13-))(P>(14>)(15>))))))')
+
+        refine_one_node(tree, vs[5], SplitDirection.RIGHT, False)
+        self.assertEqual(repr(prob), '(C-(P>(P>(P>(P>(0>)(1>))(P>(2-)(3-)))(P>(P>(4>)(5>))(P>(6-)(7-))))(P>(P>(P-(8-)(9-))(P-(10-)(11-)))(P>(P>(12-)(13-))(P>(14>)(15>))))))')

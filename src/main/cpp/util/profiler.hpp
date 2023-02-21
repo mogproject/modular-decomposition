@@ -110,11 +110,13 @@ class Profiler {
         auto count = kv.second.frequency;
         double ms = std::chrono::duration_cast<std::chrono::nanoseconds>(kv.second.accumulated_time).count();
         double bs = std::chrono::duration_cast<std::chrono::nanoseconds>(kv.second.best_time).count();
-        auto percall = std::string(ms / count < 1e4 ? format("%10.0f ns /call", ms / count)
-                                                    : format("%10.6f sec/call", ms / count * 1e-9));
-        auto mincall = std::string(format("%8.6f s", bs * 1e-9));
-        fprintf(stderr, "%-30s (%5d): %10.3f sec %9d calls [%s; (min)%s]\n", kv.first.first.c_str(), kv.first.second,
-                ms * 1e-9, count, percall.c_str(), mincall.c_str());
+
+        fprintf(stderr, "%-30s (%5d): %10.3f sec %9d calls ", kv.first.first.c_str(), kv.first.second, ms * 1e-9, count);
+        if (ms / count < 1e4) {
+          fprintf(stderr, "[%10.0f ns /call; (min)%10.6f s]\n", ms / count, bs * 1e-9);
+        } else {
+          fprintf(stderr, "[%10.6f sec/call; (min)%10.6f s]\n", ms / count * 1e-9, bs * 1e-9);
+        }
       }
     }
 

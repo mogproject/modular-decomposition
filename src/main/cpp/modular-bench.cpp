@@ -10,7 +10,13 @@ int main(int argc, char* argv[]) {
   auto graph = readwrite::read_edge_list(std::cin);
 
   // run algorithm
+#if PROFILE_ON
+  util::Profiler prof;
+  auto result = modular::modular_decomposition_time(graph, true, &prof);
+  prof.print();
+#else
   auto result = modular::modular_decomposition_time(graph, true);
+#endif
 
   // output result
   printf("%d\n", result.first.modular_width());

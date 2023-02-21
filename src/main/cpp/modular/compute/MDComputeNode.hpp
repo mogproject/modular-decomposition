@@ -19,7 +19,9 @@ class MDComputeNode {
   VertexID vertex;  // pivot for problem node
   int comp_number;
   int tree_number;
-  // int num_marks;
+  int num_marks;
+  int num_left_split_children;   // number of the children with split LEFT or MIXED; used only in refinement
+  int num_right_split_children;  // number of the children with split RIGHT or MIXED; used only in refinement
   bool active;
   bool connected;
 
@@ -30,7 +32,9 @@ class MDComputeNode {
         vertex(-1),
         comp_number(-1),
         tree_number(-1),
-        // num_marks(0),
+        num_marks(0),
+        num_left_split_children(0),
+        num_right_split_children(0),
         active(false),
         connected(false) {}
 
@@ -41,7 +45,9 @@ class MDComputeNode {
         vertex(node.vertex),
         comp_number(node.comp_number),
         tree_number(node.tree_number),
-        // num_marks(0),
+        num_marks(node.num_marks),
+        num_left_split_children(0),   // initialize to zero, not copying from the original
+        num_right_split_children(0),  // initialize to zero, not copying from the original
         active(node.active),
         connected(node.connected) {}
 
@@ -67,13 +73,15 @@ class MDComputeNode {
   bool is_operation_node() const { return node_type == NodeType::OPERATION; }
   bool is_problem_node() const { return node_type == NodeType::PROBLEM; }
 
-  // bool is_marked() { return num_marks > 0; }
-  // void add_mark() { ++num_marks; }
-  // void clear_marks() { num_marks = 0; }
+  bool is_marked() const { return num_marks > 0; }
+  void add_mark() { ++num_marks; }
+  int number_of_marks() const { return num_marks; }
+  void clear_marks() { num_marks = 0; }
 
   bool is_split_marked(SplitDirection split_type) {
     return this->split_type == SplitDirection::MIXED || this->split_type == split_type;
   }
+
   void set_split_mark(SplitDirection split_type) {
     if (this->split_type == split_type) {
       // already set
@@ -84,11 +92,34 @@ class MDComputeNode {
     }
   }
 
+  void increment_num_split_children(SplitDirection split_type) {
+    if (split_type == SplitDirection::LEFT) {
+      ++num_left_split_children;
+    } else {
+      ++num_right_split_children;
+    }
+  }
+
+  void decrement_num_split_children(SplitDirection split_type) {
+    if (split_type == SplitDirection::LEFT) {
+      --num_left_split_children;
+    } else {
+      --num_right_split_children;
+    }
+  }
+
+  int get_num_split_children(SplitDirection split_type) const {
+    return split_type == SplitDirection::LEFT ? num_left_split_children : num_right_split_children;
+  }
+
+  void clear_num_split_children() { num_left_split_children = num_right_split_children = 0; }
+
   void clear() {
     comp_number = -1;
     tree_number = -1;
     // num_marks = 0;
     split_type = SplitDirection::NONE;
+    clear_num_split_children();
   }
 
   std::string to_string() const {

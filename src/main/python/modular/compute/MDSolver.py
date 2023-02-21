@@ -69,8 +69,6 @@ def compute(
             # trace(f'after promote: current={current_prob}')
             assemble(tree, vertex_nodes, alpha_list, current_prob)
             # trace(f'after assemble: current={current_prob}')
-            merge_components(tree, current_prob, extra_components)
-            # trace(f'after merge_components: current={current_prob}')
 
             # clear all but visited
             assert current_prob.first_child is not None
@@ -78,6 +76,9 @@ def compute(
                 if c.is_leaf() and c.data.vertex in alpha_list:
                     del alpha_list[c.data.vertex]
                 c.data.clear()
+
+            merge_components(tree, current_prob, extra_components)
+            # trace(f'after merge_components: current={current_prob}')
 
         # trace(f'solve finish: current ({t}): {current_prob}, tree={tree}, visited={visited}, alpha={dict(alpha_list)}')
         result = current_prob.first_child
@@ -97,7 +98,7 @@ def compute(
 
 class MDSolver:
     @staticmethod
-    def compute(G: nx.Graph) -> tuple[RootedForest[MDNode], Node[MDNode], list[VertexId]]:
+    def compute(G: nx.Graph, verify: bool = False) -> tuple[RootedForest[MDNode], Node[MDNode], list[VertexId]]:
         n = len(G)
         assert n > 0, 'empty graph'
 
@@ -107,7 +108,7 @@ class MDSolver:
         labels = nx.get_node_attributes(G, 'label')
 
         # build computation tree
-        tree: RootedForest[MDComputeNode] = RootedForest()
+        tree: RootedForest[MDComputeNode] = RootedForest(verify=verify)
 
         # create the main problem
         main_prob = tree.create_node(MDComputeNode.new_problem_node(connected=False))

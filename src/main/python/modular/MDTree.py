@@ -16,13 +16,13 @@ class MDTree:
     Modular decomposition tree for undirected graphs.
     """
 
-    def __init__(self, G: nx.Graph, solver: str = 'linear') -> None:
+    def __init__(self, G: nx.Graph, solver: str = 'linear', verify: bool = False) -> None:
         assert len(G) > 0, 'graph cannot be empty'
 
         if solver == 'linear':
-            tree, root, vertices = MDSolver.compute(G)
+            tree, root, vertices = MDSolver.compute(G, verify=verify)
         elif solver == 'naive':
-            tree, root, vertices = MDNaiveSolver.compute(G)
+            tree, root, vertices = MDNaiveSolver.compute(G, verify=verify)
         else:
             raise ValueError(f'Unknown solver: {solver}')
 
@@ -40,7 +40,7 @@ class MDTree:
         for node in reversed(level_order):
             if node.is_leaf():
                 min_label[node] = node.data.vertex
-            
+
             if node.parent is not None:
                 min_label[node.parent] = min(min_label[node.parent], min_label[node]) if node.parent in min_label else min_label[node]
 
@@ -73,12 +73,12 @@ class MDTree:
         return repr(self.root)
 
 
-def modular_decomposition(G: nx.Graph, sorted: bool = False, solver: str = 'linear') -> Optional[MDTree]:
+def modular_decomposition(G: nx.Graph, sorted: bool = False, solver: str = 'linear', verify: bool = False) -> Optional[MDTree]:
     """Alias to the constructor."""
 
     if len(G) == 0:
         return None
-    ret = MDTree(G, solver=solver)
+    ret = MDTree(G, solver=solver, verify=verify)
     if sorted:
         ret.sort()
     return ret

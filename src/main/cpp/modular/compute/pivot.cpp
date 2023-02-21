@@ -6,10 +6,10 @@ namespace compute {
 namespace impl {
 
 static bool is_pivot_layer(CompTree& tree, int index) {
-  auto &node = tree[index];
+  auto& node = tree[index];
 
   if (!tree.is_valid(node.parent)) return false;
-  auto &p = tree[node.parent];
+  auto& p = tree[node.parent];
 
   return p.data.is_problem_node() && p.data.vertex == node.first_child;
 }
@@ -43,7 +43,7 @@ static void pull_forward(CompTree& tree, VertexID v) {
 void process_neighbors(             //
     ds::graph::Graph const& graph,  //
     CompTree& tree,                 //
-    VI alpha_list[],                //
+    VVV& alpha_list,                //
     bool const visited[],           //
     VertexID pivot,                 //
     int current_prob,               //
@@ -72,7 +72,7 @@ void process_neighbors(             //
  */
 int do_pivot(ds::graph::Graph const& graph,  //
              CompTree& tree,                 //
-             VI alpha_list[],                //
+             VVV& alpha_list,                //
              bool const visited[],           //
              int prob,                       //
              VertexID pivot                  //
