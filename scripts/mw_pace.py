@@ -54,13 +54,14 @@ def bench_cpp(G: nx.Graph) -> tuple[int, float, str]:
     return int(lines[0]), float(lines[1])
 
 
-def bench_one_instance(G: nx.Graph, num_iterations: int = 3):
+def bench_one_instance(path: str, num_iterations: int = 3):
+    G = load_pace_2023(path)
     n = G.number_of_nodes()
     m = G.number_of_edges()
 
     for _ in range(num_iterations):
         mw, elapsed = bench_cpp(G)
-        print(f'{n},{m},{mw},{elapsed}')
+        print(f'{path},{n},{m},{mw},{elapsed}')
 
 
 def read_pace_2023(input: TextIO) -> nx.Graph:
@@ -99,11 +100,10 @@ def main(args):
         args.log_level])
 
     logger.info(f'Started: {SCRIPT_PATH}')
-    logger.info('Output format: n, m, modular-width, elapsed (sec)')
+    logger.info('Output format: path, n, m, modular-width, elapsed (sec)')
 
     for path in args.path:
-        G = load_pace_2023(path)
-        bench_one_instance(G, 1)
+        bench_one_instance(path, 1)
 
     logger.info(f'Finished: {SCRIPT_PATH}')
 
