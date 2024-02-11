@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "ds/set/ArrayBitset.hpp"
 #include "ds/set/SortedVectorSet.hpp"
 
@@ -22,36 +23,36 @@ class Graph {
   bool dense_;
 
   /** Adjacency sets. */
-  std::vector<basic_set<int>*> adj_;
+  std::vector<std::unique_ptr<basic_set<int>>> adj_;
 
   /** Masks for removed vertices. */
-  basic_set<int>* removed_;
+  std::unique_ptr<basic_set<int>> removed_;
 
   bool is_valid(int v) const { return 0 <= v && v < static_cast<int>(adj_.size()) && !removed_->get(v); }
 
-  basic_set<int>* create_set(std::size_t n, bool dense) {
+    std::unique_ptr<basic_set<int>> create_set(std::size_t n, bool dense) {
     if (dense) {
       if (n <= 1 << 6) {
-        return new ArrayBitset6(n);
+        return std::make_unique<ArrayBitset6>(n);
       } else if (n <= 1 << 7) {
-        return new ArrayBitset7(n);
+        return std::make_unique<ArrayBitset7>(n);
       } else if (n <= 1 << 8) {
-        return new ArrayBitset8(n);
+        return std::make_unique<ArrayBitset8>(n);
       } else if (n <= 1 << 9) {
-        return new ArrayBitset9(n);
+        return std::make_unique<ArrayBitset9>(n);
       } else if (n <= 1 << 10) {
-        return new ArrayBitset10(n);
+        return std::make_unique<ArrayBitset10>(n);
       } else if (n <= 1 << 11) {
-        return new ArrayBitset11(n);
+        return std::make_unique<ArrayBitset11>(n);
       } else if (n <= 1 << 12) {
-        return new ArrayBitset12(n);
+        return std::make_unique<ArrayBitset12>(n);
       } else if (n <= 1 << 13) {
-        return new ArrayBitset13(n);
+        return std::make_unique<ArrayBitset13>(n);
       } else {
         throw std::invalid_argument("Graph: n too large for dense representation");
       }
     } else {
-      return new SortedVectorSet();
+      return std::make_unique<SortedVectorSet>();
     }
   }
 

@@ -18,5 +18,6 @@ class basic_set {
   virtual int pop_front() = 0;  // -1: not found
   virtual int back() const = 0;  // -1: not found
   virtual int pop_back() = 0;  // -1: not found
+  virtual ~basic_set() = default;
 };
 }  // namespace ds
